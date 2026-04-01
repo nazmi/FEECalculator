@@ -1,193 +1,239 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>API RP 14E — Topsides Wellhead Piping Sizing</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- FrankenUI + UIkit -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/franken-ui@1.1.0/dist/css/core.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/franken-ui@1.1.0/dist/css/utilities.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/uikit@3.21.6/dist/js/uikit.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/uikit@3.21.6/dist/js/uikit-icons.min.js"></script>
+
+<!-- Tailwind Play CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600&family=Share+Tech+Mono&family=Exo+2:wght@300;400;500&display=swap');
+/* ── CSS VARIABLES (referenced by JS-generated HTML) ── */
 :root {
-  --bg:#08090b;--bg2:#0e1016;--bg3:#13151c;--bg4:#1a1d26;
-  --border:#1e2130;--border2:#2a2f42;--border3:#363d54;
-  --text:#d4daf0;--text2:#8892b0;--text3:#4a5270;
-  --amber:#e8a020;--amber2:#c07810;--amber-dim:rgba(232,160,32,0.08);
-  --cyan:#20c8e8;--cyan-dim:rgba(32,200,232,0.08);
-  --green:#20d880;--green-dim:rgba(32,216,128,0.08);
-  --red:#e84040;--red-dim:rgba(232,64,64,0.08);
-  --blue:#4080e8;--blue-dim:rgba(64,128,232,0.08);
-  --orange:#e86020;--orange-dim:rgba(232,96,32,0.08);
-  --font-display:'Rajdhani',sans-serif;
-  --font-mono:'Share Tech Mono',monospace;
-  --font-body:'Exo 2',sans-serif;
+  --bg:      #09090b;
+  --bg2:     #18181b;
+  --bg3:     #27272a;
+  --bg4:     #3f3f46;
+  --border:  #27272a;
+  --border2: #3f3f46;
+  --border3: #52525b;
+  --text:    #fafafa;
+  --text2:   #d4d4d8;
+  --text3:   #a1a1aa;
+  --amber:   #f59e0b;
+  --amber2:  #d97706;
+  --amber-dim: rgba(245,158,11,0.12);
+  --cyan:    #22d3ee;
+  --cyan-dim: rgba(34,211,238,0.12);
+  --green:   #4ade80;
+  --green-dim: rgba(74,222,128,0.12);
+  --red:     #f87171;
+  --red-dim: rgba(248,113,113,0.12);
+  --blue:    #60a5fa;
+  --blue-dim: rgba(96,165,250,0.12);
+  --orange:  #fb923c;
+  --orange-dim: rgba(251,146,60,0.12);
+  --radius:  6px;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-body: 'Inter', -apple-system, sans-serif;
 }
-*{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:13px;line-height:1.5;min-height:100vh;overflow-x:hidden;}
 
-/* HEADER */
-header{background:var(--bg2);border-bottom:1px solid var(--border2);padding:0 24px;display:flex;align-items:stretch;height:52px;}
-.h-logo{display:flex;align-items:center;gap:12px;padding-right:24px;border-right:1px solid var(--border);}
-.h-logo-mark{width:32px;height:32px;border:2px solid var(--amber);display:flex;align-items:center;justify-content:center;}
-.h-logo-mark svg{width:18px;height:18px;fill:none;stroke:var(--amber);stroke-width:2;}
-.h-title{font-family:var(--font-display);font-size:17px;font-weight:600;color:var(--amber);letter-spacing:0.06em;}
-.h-sub{font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-top:1px;}
-.h-nav{display:flex;align-items:center;gap:4px;padding:0 16px;}
-.h-tag{font-family:var(--font-mono);font-size:10px;color:var(--text3);border:1px solid var(--border);padding:2px 8px;margin-left:auto;align-self:center;}
+/* ── BASE ── */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text2); font-family: var(--font-body); font-size: 13px; line-height: 1.5; min-height: 100vh; -webkit-font-smoothing: antialiased; }
 
-/* FLUID SELECTOR */
-.fluid-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:10px;}
-.fl-label{font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:.1em;margin-right:4px;}
-.fl-btn{font-family:var(--font-mono);font-size:11px;padding:5px 16px;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;letter-spacing:.06em;transition:all .15s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);}
-.fl-btn:hover{border-color:var(--border3);color:var(--text2);}
-.fl-btn.active{background:var(--amber);border-color:var(--amber);color:#08090b;font-weight:600;}
+/* ── UTILITY ── */
+.hidden { display: none !important; }
+.font-mono { font-family: var(--font-mono); }
 
-/* LAYOUT */
-.layout{display:grid;grid-template-columns:288px 1fr;min-height:calc(100vh - 94px);}
-.sidebar{background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;padding:16px 14px;}
-.main{overflow-y:auto;padding:16px 20px;}
+/* ── VALUE DISPLAY (sidebar readouts) ── */
+.vd { font-family: var(--font-mono); font-size: 11px; color: var(--amber); margin-top: 3px; }
 
-/* SIDEBAR */
-.sec-hd{font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:var(--text3);text-transform:uppercase;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
-.sec-hd::before{content:'';display:inline-block;width:3px;height:10px;background:var(--amber);}
-.sb-sec{margin-bottom:18px;}
-.field{margin-bottom:11px;}
-.field-lbl{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;color:var(--text2);margin-bottom:4px;font-family:var(--font-body);}
-.field-lbl .eqr{font-family:var(--font-mono);font-size:9px;color:var(--text3);}
-input[type=range]{width:100%;accent-color:var(--amber);cursor:pointer;height:3px;}
-select{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 8px;font-size:11px;font-family:var(--font-body);cursor:pointer;outline:none;}
-select:focus{border-color:var(--amber);}
-.vd{font-family:var(--font-mono);font-size:11px;color:var(--amber);margin-top:2px;}
-.hidden{display:none!important;}
+/* ── LAYOUT ── */
+.layout { display: grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 102px); }
+.sidebar { background: var(--bg2); border-right: 1px solid var(--border2); overflow-y: auto; padding: 14px 12px; }
+.main { overflow-y: auto; padding: 16px 20px; }
 
-/* CALLOUT */
-.callout{padding:9px 11px;font-size:11px;line-height:1.5;margin-top:6px;font-family:var(--font-body);}
-.callout.amber{background:var(--amber-dim);border-left:2px solid var(--amber);color:var(--text2);}
-.callout.red{background:var(--red-dim);border-left:2px solid var(--red);color:var(--text2);}
-.callout.cyan{background:var(--cyan-dim);border-left:2px solid var(--cyan);color:var(--text2);}
-.callout.green{background:var(--green-dim);border-left:2px solid var(--green);color:var(--text2);}
-.callout-hd{font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;margin-bottom:3px;}
-.callout.amber .callout-hd{color:var(--amber);}
-.callout.red .callout-hd{color:var(--red);}
-.callout.cyan .callout-hd{color:var(--cyan);}
-.callout.green .callout-hd{color:var(--green);}
+/* ── SIDEBAR SECTION HEADINGS ── */
+.sec-hd { font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: .1em; color: var(--text3); text-transform: uppercase; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border2); display: flex; align-items: center; gap: 6px; }
+.sec-hd::before { content: ''; display: inline-block; width: 2px; height: 10px; background: var(--amber); border-radius: 1px; }
+.sb-sec { margin-bottom: 20px; }
+.field { margin-bottom: 12px; }
+.field-lbl { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; font-weight: 500; color: var(--text2); margin-bottom: 5px; }
+.field-lbl .eqr { font-family: var(--font-mono); font-size: 10px; color: var(--text3); font-weight: 400; }
 
-/* TABS */
-.tab-row{display:flex;gap:0;margin-bottom:16px;border-bottom:1px solid var(--border2);}
-.tab{padding:8px 16px;font-family:var(--font-mono);font-size:11px;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;background:none;border-top:none;border-left:none;border-right:none;letter-spacing:.04em;transition:color .15s;}
-.tab:hover{color:var(--text2);}
-.tab.active{color:var(--amber);border-bottom-color:var(--amber);}
-.tab-panel{display:none;}
-.tab-panel.active{display:block;}
+/* ── FORM CONTROLS ── */
+input[type=range] { width: 100%; accent-color: var(--amber); cursor: pointer; height: 4px; }
+select { width: 100%; background: var(--bg3); border: 1px solid var(--border2); color: var(--text); padding: 7px 10px; font-size: 12px; font-family: var(--font-body); cursor: pointer; outline: none; border-radius: var(--radius); }
+select:focus { border-color: var(--amber); box-shadow: 0 0 0 2px rgba(245,158,11,.15); }
 
-/* RESULT CARDS */
-.rg{display:grid;gap:8px;margin-bottom:12px;}
-.rg-4{grid-template-columns:repeat(4,1fr);}
-.rg-3{grid-template-columns:repeat(3,1fr);}
-.rg-2{grid-template-columns:repeat(2,1fr);}
-.rc{background:var(--bg2);border:1px solid var(--border);padding:11px 13px;position:relative;overflow:hidden;}
-.rc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
-.rc.amber::before{background:var(--amber);}
-.rc.cyan::before{background:var(--cyan);}
-.rc.green::before{background:var(--green);}
-.rc.red::before{background:var(--red);}
-.rc.blue::before{background:var(--blue);}
-.rc.orange::before{background:var(--orange);}
-.rc-lbl{font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;color:var(--text3);margin-bottom:4px;}
-.rc-val{font-family:var(--font-display);font-size:24px;font-weight:600;color:var(--text);line-height:1;}
-.rc.amber .rc-val{color:var(--amber);}
-.rc.cyan .rc-val{color:var(--cyan);}
-.rc.green .rc-val{color:var(--green);}
-.rc.red .rc-val{color:var(--red);}
-.rc.blue .rc-val{color:var(--blue);}
-.rc.orange .rc-val{color:var(--orange);}
-.rc-unit{font-size:11px;color:var(--text3);margin-top:3px;font-family:var(--font-body);}
-.rc-eq{font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-top:6px;padding-top:5px;border-top:1px solid var(--border);}
+/* ── FLUID BAR ── */
+.fluid-bar { background: var(--bg2); border-bottom: 1px solid var(--border2); padding: 8px 24px; display: flex; align-items: center; gap: 8px; }
+.fl-label { font-family: var(--font-mono); font-size: 10px; color: var(--text3); letter-spacing: .08em; margin-right: 6px; }
+.fl-btn { font-size: 12px; font-weight: 500; padding: 5px 14px; border: 1px solid var(--border2); background: transparent; color: var(--text3); cursor: pointer; border-radius: var(--radius); transition: all .15s; }
+.fl-btn:hover { border-color: var(--border3); color: var(--text2); background: var(--bg3); }
+.fl-btn.active { background: var(--amber); border-color: var(--amber); color: #09090b; font-weight: 700; }
 
-/* BANNER */
-.banner{padding:8px 14px;font-family:var(--font-mono);font-size:11px;margin-bottom:14px;display:flex;align-items:center;gap:10px;border-left:3px solid;}
-.banner.ok{background:var(--green-dim);border-color:var(--green);color:var(--green);}
-.banner.warn{background:var(--amber-dim);border-color:var(--amber);color:var(--amber);}
-.banner.over{background:var(--red-dim);border-color:var(--red);color:var(--red);}
-.banner.info{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan);}
+/* ── TABS ── */
+.tab-row { display: flex; gap: 2px; margin-bottom: 16px; border-bottom: 1px solid var(--border2); }
+.tab { padding: 8px 14px; font-size: 12px; font-weight: 500; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; border-top: none; border-left: none; border-right: none; transition: color .15s; }
+.tab:hover { color: var(--text2); }
+.tab.active { color: var(--amber); border-bottom-color: var(--amber); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
 
-/* CHART WRAP */
-.cw{background:var(--bg2);border:1px solid var(--border);padding:14px;margin-bottom:14px;}
-.ch{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;}
-.ct{font-family:var(--font-display);font-size:13px;font-weight:500;color:var(--text2);letter-spacing:.04em;}
-.ceq{font-family:var(--font-mono);font-size:9px;color:var(--text3);}
-.leg{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;font-size:11px;color:var(--text2);font-family:var(--font-body);}
-.leg span{display:flex;align-items:center;gap:5px;}
-.lsw{width:18px;height:2px;display:inline-block;}
+/* ── UNIT TOGGLES ── */
+.toggle-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.tgl-lbl { font-family: var(--font-mono); font-size: 10px; color: var(--text3); letter-spacing: .06em; }
+.tgl { display: flex; border: 1px solid var(--border2); border-radius: var(--radius); overflow: hidden; }
+.tgl-btn { padding: 5px 13px; font-family: var(--font-mono); font-size: 11px; background: transparent; border: none; color: var(--text3); cursor: pointer; transition: all .12s; }
+.tgl-btn:hover { background: var(--bg3); color: var(--text2); }
+.tgl-btn.active { background: var(--amber); color: #09090b; font-weight: 700; }
 
-/* TOGGLE */
-.toggle-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap;}
-.tgl-lbl{font-family:var(--font-mono);font-size:10px;color:var(--text3);}
-.tgl{display:flex;border:1px solid var(--border2);}
-.tgl-btn{padding:4px 12px;font-family:var(--font-mono);font-size:10px;background:transparent;border:none;color:var(--text3);cursor:pointer;letter-spacing:.04em;}
-.tgl-btn.active{background:var(--amber);color:#08090b;font-weight:600;}
+/* ── RESULT CARDS (JS-generated) ── */
+.rg { display: grid; gap: 8px; margin-bottom: 12px; }
+.rg-4 { grid-template-columns: repeat(4,1fr); }
+.rg-3 { grid-template-columns: repeat(3,1fr); }
+.rg-2 { grid-template-columns: repeat(2,1fr); }
+.rc { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 14px; position: relative; overflow: hidden; }
+.rc::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.rc.amber::before { background: var(--amber); }
+.rc.cyan::before { background: var(--cyan); }
+.rc.green::before { background: var(--green); }
+.rc.red::before { background: var(--red); }
+.rc.blue::before { background: var(--blue); }
+.rc.orange::before { background: var(--orange); }
+.rc-lbl { font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: .07em; color: var(--text3); margin-bottom: 6px; }
+.rc-val { font-size: 26px; font-weight: 700; color: var(--text); line-height: 1; letter-spacing: -.02em; }
+.rc.amber .rc-val { color: var(--amber); }
+.rc.cyan .rc-val { color: var(--cyan); }
+.rc.green .rc-val { color: var(--green); }
+.rc.red .rc-val { color: var(--red); }
+.rc.blue .rc-val { color: var(--blue); }
+.rc.orange .rc-val { color: var(--orange); }
+.rc-unit { font-size: 11px; color: var(--text3); margin-top: 4px; }
+.rc-eq { font-family: var(--font-mono); font-size: 10px; color: var(--text3); margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--border2); }
 
-/* PIPE TABLE */
-.ptbl{width:100%;border-collapse:collapse;font-size:11px;}
-.ptbl th{text-align:left;padding:6px 10px;font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;color:var(--text3);border-bottom:1px solid var(--border2);}
-.ptbl td{padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text2);font-family:var(--font-body);}
-.ptbl tr.selected td{background:rgba(232,160,32,.06);}
-.ptbl tr:hover td{background:var(--bg3);}
-.ptbl td.sz{font-family:var(--font-display);font-size:14px;font-weight:600;color:var(--amber);}
-.ptbl td.ok{color:var(--green);}
-.ptbl td.wn{color:var(--amber);}
-.ptbl td.ov{color:var(--red);}
-.ptbl td.bl{color:var(--cyan);}
-.ptbl td.nm{color:var(--text);}
-.pill{display:inline-block;padding:2px 8px;font-family:var(--font-mono);font-size:9px;letter-spacing:.04em;}
-.p-ok{background:var(--green-dim);color:var(--green);border:1px solid rgba(32,216,128,.3);}
-.p-wn{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(232,160,32,.3);}
-.p-ov{background:var(--red-dim);color:var(--red);border:1px solid rgba(232,64,64,.3);}
-.p-mn{background:var(--cyan-dim);color:var(--cyan);border:1px solid rgba(32,200,232,.3);}
-.p-rec{background:rgba(32,216,128,.15);color:var(--green);border:2px solid var(--green);}
+/* ── BANNERS (JS-generated) ── */
+.banner { padding: 10px 14px; font-family: var(--font-mono); font-size: 12px; font-weight: 500; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; border-radius: var(--radius); border-left: 3px solid; }
+.banner.ok { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+.banner.warn { background: var(--amber-dim); border-color: var(--amber); color: var(--amber); }
+.banner.over { background: var(--red-dim); border-color: var(--red); color: var(--red); }
+.banner.info { background: var(--cyan-dim); border-color: var(--cyan); color: var(--cyan); }
 
-/* WALL THICKNESS */
-.wt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
-.wt-card{background:var(--bg3);border:1px solid var(--border);padding:10px 12px;}
-.wt-nom{font-family:var(--font-display);font-size:16px;font-weight:600;color:var(--amber);}
-.wt-sch{font-family:var(--font-mono);font-size:11px;color:var(--green);margin-top:2px;}
-.wt-detail{font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-top:4px;line-height:1.6;}
-.wt-card.fail{border-color:var(--red);background:var(--red-dim);}
-.wt-card.fail .wt-sch{color:var(--red);}
+/* ── CALLOUTS (static + JS-generated) ── */
+.callout { padding: 10px 12px; font-size: 12px; line-height: 1.55; margin-top: 6px; border-radius: var(--radius); border-left: 3px solid; }
+.callout.amber { background: var(--amber-dim); border-color: var(--amber); color: var(--text2); }
+.callout.red { background: var(--red-dim); border-color: var(--red); color: var(--text2); }
+.callout.cyan { background: var(--cyan-dim); border-color: var(--cyan); color: var(--text2); }
+.callout.green { background: var(--green-dim); border-color: var(--green); color: var(--text2); }
+.callout-hd { font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: .06em; margin-bottom: 4px; }
+.callout.amber .callout-hd { color: var(--amber); }
+.callout.red .callout-hd { color: var(--red); }
+.callout.cyan .callout-hd { color: var(--cyan); }
+.callout.green .callout-hd { color: var(--green); }
 
-/* EQUATION BLOCKS */
-.eq-blk{background:var(--bg3);border:1px solid var(--border);padding:12px 14px;margin-bottom:10px;font-family:var(--font-mono);font-size:11px;line-height:1.8;}
-.eq-num{color:var(--amber);font-size:10px;letter-spacing:.06em;margin-bottom:4px;}
-.eq-main{color:var(--text);font-size:13px;margin:4px 0 6px;font-family:var(--font-display);font-weight:500;letter-spacing:.02em;}
-.eq-vars{font-size:10px;color:var(--text3);line-height:1.7;}
+/* ── CHART WRAP ── */
+.cw { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
+.ch { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+.ct { font-size: 13px; font-weight: 600; color: var(--text); letter-spacing: -.01em; }
+.ceq { font-family: var(--font-mono); font-size: 10px; color: var(--text3); }
+.leg { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; font-size: 11px; color: var(--text3); }
+.leg span { display: flex; align-items: center; gap: 5px; }
 
-/* TWO COL */
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+/* ── VELOCITY LEGEND SWATCHES (JS-generated) ── */
+.lsw { width: 18px; height: 2px; display: inline-block; border-radius: 1px; }
 
-/* PIPE SCHEDULE DATA */
-.hint{font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-top:8px;line-height:1.6;}
+/* ── STATUS PILLS (JS-generated) ── */
+.pill { display: inline-block; padding: 2px 8px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .03em; border-radius: 4px; }
+.p-ok { background: var(--green-dim); color: var(--green); border: 1px solid rgba(74,222,128,.3); }
+.p-wn { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,158,11,.3); }
+.p-ov { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,.3); }
+.p-mn { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(34,211,238,.3); }
+.p-rec { background: rgba(74,222,128,.15); color: var(--green); border: 2px solid var(--green); font-weight: 600; }
 
-@media(max-width:960px){.layout{grid-template-columns:1fr;}.rg-4{grid-template-columns:repeat(2,1fr);}.two-col,.three-col{grid-template-columns:1fr;}}
+/* ── PIPE TABLE (JS-generated) ── */
+.ptbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.ptbl th { text-align: left; padding: 8px 10px; font-family: var(--font-mono); font-size: 10px; font-weight: 500; letter-spacing: .07em; color: var(--text3); border-bottom: 1px solid var(--border2); background: var(--bg3); }
+.ptbl td { padding: 8px 10px; border-bottom: 1px solid var(--border2); color: var(--text2); }
+.ptbl tr.selected td { background: rgba(245,158,11,.06); }
+.ptbl tr:hover td { background: var(--bg3); }
+.ptbl td.sz { font-size: 14px; font-weight: 700; color: var(--amber); }
+.ptbl td.ok { color: var(--green); }
+.ptbl td.wn { color: var(--amber); }
+.ptbl td.ov { color: var(--red); }
+.ptbl td.bl { color: var(--cyan); }
+.ptbl td.nm { color: var(--text); }
+
+/* ── WALL THICKNESS CARDS (JS-generated) ── */
+.wt-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 12px; }
+.wt-card { background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); padding: 12px; }
+.wt-nom { font-size: 18px; font-weight: 700; color: var(--amber); letter-spacing: -.02em; }
+.wt-sch { font-family: var(--font-mono); font-size: 11px; color: var(--green); margin-top: 3px; }
+.wt-detail { font-family: var(--font-mono); font-size: 10px; color: var(--text3); margin-top: 5px; line-height: 1.7; }
+.wt-card.fail { border-color: var(--red); background: var(--red-dim); }
+.wt-card.fail .wt-sch { color: var(--red); }
+
+/* ── EQUATION BLOCKS (JS-generated) ── */
+.eq-blk { background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; font-family: var(--font-mono); font-size: 11px; line-height: 1.8; }
+.eq-num { color: var(--amber); font-size: 10px; font-weight: 500; letter-spacing: .06em; margin-bottom: 4px; }
+.eq-main { color: var(--text); font-size: 14px; font-weight: 600; margin: 4px 0 8px; letter-spacing: -.01em; }
+.eq-vars { font-size: 11px; color: var(--text3); line-height: 1.75; }
+
+/* ── GRID HELPERS ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.hint { font-family: var(--font-mono); font-size: 10px; color: var(--text3); margin-top: 10px; line-height: 1.7; }
+
+/* ── CHART CANVAS HEIGHTS ── */
+.chart-sm { position: relative; height: 200px; }
+.chart-lg { position: relative; height: 400px; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:960px) {
+  .layout { grid-template-columns: 1fr; }
+  .rg-4 { grid-template-columns: repeat(2,1fr); }
+  .two-col, .three-col { grid-template-columns: 1fr; }
+  .wt-grid { grid-template-columns: repeat(2,1fr); }
+}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="h-logo">
-    <div class="h-logo-mark">
-      <svg viewBox="0 0 18 18"><circle cx="9" cy="9" r="6"/><line x1="9" y1="3" x2="9" y2="15"/><line x1="3" y1="9" x2="15" y2="9"/></svg>
+<!-- ── HEADER ── -->
+<nav class="uk-navbar-container" style="background:var(--bg2);border-bottom:1px solid var(--border2);" uk-navbar>
+  <div class="uk-navbar-left" style="padding-left:24px;gap:16px;">
+    <div style="display:flex;align-items:center;gap:10px;padding-right:20px;border-right:1px solid var(--border2);">
+      <div style="width:34px;height:34px;background:var(--amber-dim);border:1px solid rgba(245,158,11,.4);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg viewBox="0 0 18 18" width="16" height="16" fill="none" stroke="var(--amber)" stroke-width="2"><circle cx="9" cy="9" r="6"/><line x1="9" y1="3" x2="9" y2="15"/><line x1="3" y1="9" x2="15" y2="9"/></svg>
+      </div>
+      <div>
+        <div style="font-size:15px;font-weight:600;color:var(--text);letter-spacing:-.01em;">API RP 14E</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--text3);margin-top:1px;">Topsides Wellhead Piping · Choke to Manifold</div>
+      </div>
     </div>
-    <div>
-      <div class="h-title">API RP 14E</div>
-      <div class="h-sub">Topsides Wellhead Piping · Choke to Manifold</div>
-    </div>
+    <span style="font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-left:4px;">ASME B31.3 · Wall Thickness · Erosional Velocity · Two-Phase</span>
   </div>
-  <div class="h-nav" style="margin-left:20px;">
-    <span style="font-family:var(--font-mono);font-size:10px;color:var(--text3);">ASME B31.3 · Wall Thickness · Erosional Velocity · Two-Phase</span>
+  <div class="uk-navbar-right" style="padding-right:24px;">
+    <span style="font-family:var(--font-mono);font-size:10px;color:var(--amber);background:var(--amber-dim);border:1px solid rgba(245,158,11,.3);padding:3px 10px;border-radius:4px;letter-spacing:.05em;">2nd Ed. 1991</span>
   </div>
-  <div class="h-tag">2nd Ed. 1991</div>
-</header>
+</nav>
 
+<!-- ── FLUID TYPE BAR ── -->
 <div class="fluid-bar">
   <span class="fl-label">FLUID TYPE</span>
   <button class="fl-btn active" id="btn-twophase" onclick="setFluid('twophase')">TWO-PHASE GAS/LIQ</button>
@@ -195,9 +241,11 @@ select:focus{border-color:var(--amber);}
   <button class="fl-btn" id="btn-liquid" onclick="setFluid('liquid')">SINGLE-PHASE LIQUID</button>
 </div>
 
+<!-- ── MAIN LAYOUT ── -->
 <div class="layout">
 <div class="sidebar">
 
+  <!-- Wellhead Conditions -->
   <div class="sb-sec">
     <div class="sec-hd">Wellhead / Choke Outlet Conditions</div>
     <div class="field">
@@ -216,6 +264,7 @@ select:focus{border-color:var(--amber);}
     </div>
   </div>
 
+  <!-- Gas Properties -->
   <div class="sb-sec" id="sec-gas">
     <div class="sec-hd">Gas Properties</div>
     <div class="field">
@@ -235,6 +284,7 @@ select:focus{border-color:var(--amber);}
     </div>
   </div>
 
+  <!-- Liquid Properties -->
   <div class="sb-sec" id="sec-liq">
     <div class="sec-hd">Liquid Properties</div>
     <div class="field">
@@ -249,17 +299,18 @@ select:focus{border-color:var(--amber);}
     </div>
   </div>
 
+  <!-- Design Parameters -->
   <div class="sb-sec">
     <div class="sec-hd">Design Parameters</div>
 
     <div class="field" id="field-cfactor">
       <div class="field-lbl">C Factor <span class="eqr">Eq. 2.14</span></div>
-      <select id="C_factor">
-        <option value="100">100 — continuous, H₂S/CO₂/solids</option>
-        <option value="125" selected>125 — continuous, clean, conservative</option>
-        <option value="150">150 — continuous, inhibited, non-corrosive</option>
-        <option value="200">200 — CRA or fully inhibited, no solids</option>
-        <option value="250">250 — intermittent, clean, solids-free</option>
+      <select id="C_factor" class="uk-select" style="background:var(--bg3);border-color:var(--border2);color:var(--text);font-size:12px;">
+        <option value="100" selected>100 — continuous service (API 14E §2.5)</option>
+        <option value="125">125 — intermittent service (API 14E §2.5)</option>
+        <option value="150">150 — industry practice, not from API 14E text</option>
+        <option value="200">200 — industry practice, not from API 14E text</option>
+        <option value="250">250 — industry practice, not from API 14E text</option>
       </select>
     </div>
 
@@ -271,7 +322,7 @@ select:focus{border-color:var(--amber);}
 
     <div class="field">
       <div class="field-lbl">Pipe Material <span class="eqr">ASME B31.3</span></div>
-      <select id="pipe_mat">
+      <select id="pipe_mat" class="uk-select" style="background:var(--bg3);border-color:var(--border2);color:var(--text);font-size:12px;">
         <option value="17500">ASTM A106 Gr.B Seamless — S=17,500 psi</option>
         <option value="20000">ASTM A333 Gr.6 — S=20,000 psi</option>
         <option value="23300">API 5L X52 — S=23,300 psi</option>
@@ -282,7 +333,7 @@ select:focus{border-color:var(--amber);}
 
     <div class="field">
       <div class="field-lbl">Weld Joint Factor E <span class="eqr">ASME B31.3</span></div>
-      <select id="E_factor">
+      <select id="E_factor" class="uk-select" style="background:var(--bg3);border-color:var(--border2);color:var(--text);font-size:12px;">
         <option value="1.00" selected>1.00 — seamless</option>
         <option value="0.85">0.85 — ERW</option>
         <option value="0.80">0.80 — furnace butt weld</option>
@@ -306,7 +357,7 @@ select:focus{border-color:var(--amber);}
     <div class="sec-hd">Sand / Solids</div>
     <div class="field">
       <div class="field-lbl">Sand Production</div>
-      <select id="sand">
+      <select id="sand" class="uk-select" style="background:var(--bg3);border-color:var(--border2);color:var(--text);font-size:12px;">
         <option value="none">None anticipated</option>
         <option value="possible">Possible — monitor</option>
         <option value="confirmed">Confirmed — present</option>
@@ -317,8 +368,10 @@ select:focus{border-color:var(--amber);}
 
 </div><!-- /sidebar -->
 
+<!-- ── MAIN CONTENT ── -->
 <div class="main">
 
+  <!-- Tab Navigation -->
   <div class="tab-row">
     <button class="tab active" onclick="showTab('results',event)">Results</button>
     <button class="tab" onclick="showTab('velocity',event)">Velocity Chart</button>
@@ -327,36 +380,64 @@ select:focus{border-color:var(--amber);}
     <button class="tab" onclick="showTab('reference',event)">API 14E Reference</button>
   </div>
 
-  <!-- RESULTS TAB -->
+  <!-- ── RESULTS TAB ── -->
   <div id="tab-results" class="tab-panel active">
+
+    <!-- Unit toggles -->
     <div class="toggle-row">
       <span class="tgl-lbl">VELOCITY</span>
-      <div class="tgl"><button class="tgl-btn" id="ut-fts" onclick="setVU('fts')">ft/s</button><button class="tgl-btn active" id="ut-ms" onclick="setVU('ms')">m/s</button></div>
+      <div class="tgl">
+        <button class="tgl-btn" id="ut-fts" onclick="setVU('fts')">ft/s</button>
+        <button class="tgl-btn active" id="ut-ms" onclick="setVU('ms')">m/s</button>
+      </div>
       <span class="tgl-lbl">PRESSURE DROP</span>
-      <div class="tgl"><button class="tgl-btn" id="ut-psi" onclick="setDU('psi')">psi/100ft</button><button class="tgl-btn active" id="ut-bkm" onclick="setDU('bkm')">bar/km</button></div>
+      <div class="tgl">
+        <button class="tgl-btn" id="ut-psi" onclick="setDU('psi')">psi/100ft</button>
+        <button class="tgl-btn active" id="ut-bkm" onclick="setDU('bkm')">bar/km</button>
+      </div>
     </div>
+
+    <!-- Primary metric cards (JS-populated) -->
     <div class="rg rg-4" id="rg-main"></div>
+
+    <!-- Secondary metric cards (JS-populated) -->
     <div class="rg rg-4" id="rg-sec"></div>
+
+    <!-- Status banner (JS-populated) -->
     <div id="status-banner" class="banner ok">—</div>
+
+    <!-- Bar charts -->
     <div class="two-col">
       <div class="cw">
-        <div class="ch"><div class="ct">Velocity by pipe size</div><div class="ceq">at current flowrate</div></div>
-        <div style="position:relative;height:200px;"><canvas id="velBarCh"></canvas></div>
+        <div class="ch">
+          <div class="ct">Velocity by pipe size</div>
+          <div class="ceq">at current flowrate</div>
+        </div>
+        <div class="chart-sm"><canvas id="velBarCh"></canvas></div>
       </div>
       <div class="cw">
-        <div class="ch"><div class="ct">Pressure drop by pipe size</div><div class="ceq" id="dp-eq-lbl">Eq. 2.17a · f=0.015</div></div>
-        <div style="position:relative;height:200px;"><canvas id="dpBarCh"></canvas></div>
+        <div class="ch">
+          <div class="ct">Pressure drop by pipe size</div>
+          <div class="ceq" id="dp-eq-lbl">Eq. 2.17a · f=0.015</div>
+        </div>
+        <div class="chart-sm"><canvas id="dpBarCh"></canvas></div>
       </div>
     </div>
-    <div id="sand-banner-results"></div>
-  </div>
 
-  <!-- VELOCITY CHART TAB -->
+    <!-- Sand warning banner (JS-populated) -->
+    <div id="sand-banner-results"></div>
+
+  </div><!-- /tab-results -->
+
+  <!-- ── VELOCITY CHART TAB ── -->
   <div id="tab-velocity" class="tab-panel">
     <div class="cw">
-      <div class="ch"><div class="ct" id="vel-chart-title">Velocity vs flowrate — 2" to 14"</div><div class="ceq" id="vel-chart-eq">API 14E Eq. 2.14</div></div>
+      <div class="ch">
+        <div class="ct" id="vel-chart-title">Velocity vs flowrate — 2" to 14"</div>
+        <div class="ceq" id="vel-chart-eq">API 14E Eq. 2.14</div>
+      </div>
       <div class="leg" id="vel-legend"></div>
-      <div style="position:relative;height:400px;"><canvas id="velLineCh"></canvas></div>
+      <div class="chart-lg"><canvas id="velLineCh"></canvas></div>
       <div class="hint" id="vel-chart-hint"></div>
     </div>
     <div class="callout cyan">
@@ -364,19 +445,27 @@ select:focus{border-color:var(--amber);}
       v = Q_flowing / A_pipe &nbsp;|&nbsp; Q_flowing = Q_std × (P_std/P) × (T/T_std) × Z &nbsp;|&nbsp; Each pipe size line has slope = (P_std/P × T/T_std × Z) / A<br>
       Lines are linear because at fixed P &amp; T, velocity ∝ flowrate. Slope is flatter for larger pipes (larger A). Changing P shifts all slopes — lower P means gas expands more → higher velocity for same MMscfd → why choke outlet is the critical sizing point.
     </div>
-  </div>
+  </div><!-- /tab-velocity -->
 
-  <!-- WALL THICKNESS TAB -->
+  <!-- ── WALL THICKNESS TAB ── -->
   <div id="tab-wallthk" class="tab-panel">
+
+    <!-- Key result cards (JS-populated) -->
     <div class="rg rg-3" style="margin-bottom:14px;" id="wt-key-cards"></div>
+
     <div class="cw">
-      <div class="ch"><div class="ct">ASME B31.3 Eq. 2.19 — Required wall thickness by pipe size</div><div class="ceq">t = Pi·Do / (2·(S·E + Pi·Y))</div></div>
+      <div class="ch">
+        <div class="ct">ASME B31.3 Eq. 2.19 — Required wall thickness by pipe size</div>
+        <div class="ceq">t = Pi·Do / (2·(S·E + Pi·Y))</div>
+      </div>
+      <!-- Per-pipe schedule grid (JS-populated) -->
       <div id="wt-grid" class="wt-grid"></div>
       <div class="hint">
         t_required = pressure design thickness (in) · t_total = t_required + corrosion allowance · Schedule shown = minimum acceptable schedule (Sch 40/80/160/XXH)<br>
         Y = 0.4 (ferrous, T &lt; 900°F, t &lt; D/6) · E = weld joint factor · S = allowable stress (psi) · API 14E §2.6: min 0.050 in corrosion/mechanical allowance for carbon steel
       </div>
     </div>
+
     <div class="callout amber" style="margin-top:12px;">
       <div class="callout-hd">API RP 14E §2.7 — JOINT CONNECTIONS</div>
       Hydrocarbon piping ≥2" diameter → butt welded. Piping ≤1½" → socket welded for: hydrocarbon service above ANSI 600#, above 200°F, subject to vibration, or glycol service. Wellhead piping is typically ANSI 900# or 1500# class.
@@ -385,26 +474,30 @@ select:focus{border-color:var(--amber);}
       <div class="callout-hd">API RP 14E §2.8 — THERMAL EXPANSION</div>
       Topsides wellhead piping at high temperature — check expansion criterion: (D × ΔL) / U² ≤ 0.03 per ANSI B31.3. ΔT typically 100–200°F for wellhead piping. Short runs generally self-compensating; L-bends and Z-offsets preferred over expansion bellows per API 14E.
     </div>
-  </div>
 
-  <!-- PIPE SIZE TABLE TAB -->
+  </div><!-- /tab-wallthk -->
+
+  <!-- ── PIPE SIZE TABLE TAB ── -->
   <div id="tab-table" class="tab-panel">
     <div class="cw">
-      <div class="ch"><div class="ct">Full pipe sizing — 2" to 14" nominal</div><div class="ceq" id="tbl-conds"></div></div>
+      <div class="ch">
+        <div class="ct">Full pipe sizing — 2" to 14" nominal</div>
+        <div class="ceq" id="tbl-conds"></div>
+      </div>
       <div style="overflow-x:auto;">
-        <table class="ptbl">
+        <table class="ptbl uk-table uk-table-hover uk-table-divider uk-table-small">
           <thead id="tbl-head"></thead>
           <tbody id="tbl-body"></tbody>
         </table>
       </div>
       <div class="hint" id="tbl-hint"></div>
     </div>
-  </div>
+  </div><!-- /tab-table -->
 
-  <!-- REFERENCE TAB -->
+  <!-- ── REFERENCE TAB ── -->
   <div id="tab-reference" class="tab-panel">
     <div id="eq-content"></div>
-  </div>
+  </div><!-- /tab-reference -->
 
 </div><!-- /main -->
 </div><!-- /layout -->
@@ -420,8 +513,12 @@ const PIPES = [
   {nom:'10"',  id40:10.020,od:10.750,scheds:{40:{t:0.365},80:{t:0.500},160:{t:1.125},XXH:{t:1.000}}},
   {nom:'12"',  id40:11.938,od:12.750,scheds:{40:{t:0.406},80:{t:0.562},160:{t:1.312},XXH:{t:1.000}}},
   {nom:'14"',  id40:13.124,od:14.000,scheds:{40:{t:0.438},80:{t:0.594},160:{t:1.406},XXH:{t:1.094}}},
+  {nom:'16"',  id40:15.000,od:16.000,scheds:{40:{t:0.500},80:{t:0.844},160:{t:1.594}}},
+  {nom:'18"',  id40:16.876,od:18.000,scheds:{40:{t:0.562},80:{t:0.938},160:{t:1.781}}},
+  {nom:'20"',  id40:18.812,od:20.000,scheds:{40:{t:0.594},80:{t:1.031},160:{t:1.969}}},
+  {nom:'24"',  id40:22.624,od:24.000,scheds:{40:{t:0.688},80:{t:1.219},160:{t:2.344}}},
 ];
-const COLORS=['#e8a020','#20c8e8','#20d880','#4080e8','#bc8cff','#e86020','#e84040','#60c8a0'];
+const COLORS=['#e8a020','#20c8e8','#20d880','#4080e8','#bc8cff','#e86020','#e84040','#60c8a0','#ff6eb4','#a0e840','#ff9966','#b0c4ff'];
 
 // ─── STATE ────────────────────────────────────────────────────────────────
 let fluid='twophase', vu='ms', du='bkm';
@@ -445,17 +542,14 @@ function Ve(C,rho){return C/Math.sqrt(rho);}
 // API 14E Eq.2.18
 function massW(Qg,Sg,Ql,Sl){return 3180*Qg*Sg+14.6*Ql*Sl;}
 // API 14E Eq.2.17a (psi/100ft)
-function dp2ph(W,di,rho){return 5.04e-3*W*W/(Math.pow(di,5)*rho);}
-// D-W gas (psi/100ft) f=0.015
+function dp2ph(W,di,rho,f=0.015){return 3.36e-4*f*W*W/(Math.pow(di,5)*rho);}
+// API 14E Eq. 2.9 — gas (psi/100ft), f=0.015, Q in MMscfd
 function dpGas(Qg,di,P,TR,Sg,Z){
-  const rho=rhoGas(P,TR,Sg,Z), A=Math.PI*Math.pow(di/2/12,2);
-  const v=Qg*1e6/86400*(14.7/P)*(TR/520)*Z/A;
-  return 0.015*(rho*v*v/2)/(di/12)/144*100;
+  return 12.6*100*0.015*Sg*Qg*Qg*Z*TR/(P*Math.pow(di,5));
 }
+// API 14E Eq. 2.2 — liquid (psi/100ft), f=0.015, Q in bbl/day
 function dpLiq(Ql,di,Sl){
-  const rho=rhoLiq(Sl), A=Math.PI*Math.pow(di/2/12,2);
-  const v=Ql*5.6146/86400/A;
-  return 0.015*(rho*v*v/2)/(di/12)/144*100;
+  return 0.00115*0.015*Ql*Ql*Sl/Math.pow(di,5);
 }
 // Velocity (ft/s) in pipe
 function vel2ph(Qg,Ql,di,P,TR,Sg,Z){
@@ -484,7 +578,7 @@ function vd(v_fts){return vu==='ms'?v_fts*0.3048:v_fts;}
 function vl(){return vu==='ms'?'m/s':'ft/s';}
 function dd(dp){return du==='bkm'?dp*2.2621:dp;}  // psi/100ft → bar/km
 function dl(){return du==='bkm'?'bar/km':'psi/100ft';}
-function cgrToR(cgr){return cgr===0?1e9:(1e6/cgr)*5.6146;}
+function cgrToR(cgr){return cgr===0?1e9:(1e6/cgr);}
 
 // ─── INPUTS ───────────────────────────────────────────────────────────────
 function inp(){
@@ -687,19 +781,19 @@ function renderVelLine(flowArr, velFn, Ve_lim, Ve_op, Vmin, xlabel){
   datasets.push({label:'80%Ve',data:flowArr.map(()=>parseFloat(vd(Ve_op).toFixed(3))),borderColor:'#666',borderDash:[4,4],borderWidth:1.5,pointRadius:0,backgroundColor:'transparent'});
   if(Vmin) datasets.push({label:'10ft/s',data:flowArr.map(()=>parseFloat(vd(Vmin).toFixed(3))),borderColor:'#20c8e8',borderDash:[3,3],borderWidth:1.5,pointRadius:0,backgroundColor:'transparent'});
   document.getElementById('vel-legend').innerHTML=PIPES.map((p,i)=>`<span><span class="lsw" style="background:${COLORS[i]};"></span>${p.nom}</span>`).join('')+`<span><span class="lsw" style="background:#e84040;"></span>Ve limit</span><span><span class="lsw" style="background:#666;"></span>80% Ve</span>`;
-  if(CH.vel){CH.vel.data.labels=flowArr;CH.vel.data.datasets=datasets;CH.vel.options.scales.x.title.text=xlabel;CH.vel.options.scales.y.title.text=vl_;CH.vel.update('none');}
-  else{CH.vel=new Chart(document.getElementById('velLineCh'),{type:'line',data:{labels:flowArr,datasets},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,filter:t=>!['Ve','80%Ve','10ft/s'].includes(t.dataset.label),callbacks:{title:t=>`Q = ${t[0].label}`,label:t=>` ${t.dataset.label}: ${parseFloat(t.formattedValue).toFixed(2)} ${vl_}`}}},scales:{x:{title:{display:true,text:xlabel,color:'#4a5270',font:{size:11}},ticks:{color:'#4a5270',font:{size:10},autoSkip:true,maxTicksLimit:10},grid:{color:'rgba(30,33,48,0.8)'}},y:{title:{display:true,text:vl_,color:'#4a5270',font:{size:11}},ticks:{color:'#4a5270',font:{size:10}},grid:{color:'rgba(30,33,48,0.8)'},min:0}}}});}
+  if(CH.vel){CH.vel.data.labels=flowArr;CH.vel.data.datasets=datasets;CH.vel.options.scales.x.title.text=xlabel;CH.vel.options.scales.y.title.text=vl_;CH.vel.options.scales.y.max=parseFloat((vd(Ve_lim)*1.1).toFixed(1));CH.vel.update('none');}
+  else{CH.vel=new Chart(document.getElementById('velLineCh'),{type:'line',data:{labels:flowArr,datasets},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,filter:t=>!['Ve','80%Ve','10ft/s'].includes(t.dataset.label),callbacks:{title:t=>`Q = ${t[0].label}`,label:t=>` ${t.dataset.label}: ${parseFloat(t.formattedValue).toFixed(2)} ${vl()}`}}},scales:{x:{title:{display:true,text:xlabel,color:'#4a5270',font:{size:11}},ticks:{color:'#4a5270',font:{size:10},autoSkip:true,maxTicksLimit:10},grid:{color:'rgba(30,33,48,0.8)'}},y:{title:{display:true,text:vl_,color:'#4a5270',font:{size:11}},ticks:{color:'#4a5270',font:{size:10}},grid:{color:'rgba(30,33,48,0.8)'},min:0,max:parseFloat((vd(Ve_lim)*1.1).toFixed(1))}}}});}
 }
 function renderVelLine_TP(i,TR,Z,rho,Ve_,Ve_op,Ql){
-  const flows=[];for(let q=1;q<=150;q+=2)flows.push(q);
-  document.getElementById('vel-chart-title').textContent='Velocity vs gas flowrate — 2" to 14"';
+  const flows=[];for(let q=1;q<=400;q+=4)flows.push(q);
+  document.getElementById('vel-chart-title').textContent='Velocity vs gas flowrate — 2" to 24"';
   document.getElementById('vel-chart-eq').textContent='Two-phase · API 14E Eq. 2.14';
   document.getElementById('vel-chart-hint').textContent='v = (Q_gas_flowing + Q_liq_flowing) / A_pipe  |  Q_gas_flowing = Qg × (14.7/P) × (T/520) × Z  |  Lines linear because velocity ∝ flowrate at fixed P, T';
   renderVelLine(flows,(q,di)=>vel2ph(q,i.CGR>0?q*i.CGR:0,di,i.P,TR,i.Sg,Z),Ve_,Ve_op,10,'MMscfd');
 }
 function renderVelLine_Gas(i,TR,Z,rho,Ve_,Ve_op){
-  const flows=[];for(let q=1;q<=150;q+=2)flows.push(q);
-  document.getElementById('vel-chart-title').textContent='Velocity vs gas flowrate — 2" to 14"';
+  const flows=[];for(let q=1;q<=400;q+=4)flows.push(q);
+  document.getElementById('vel-chart-title').textContent='Velocity vs gas flowrate — 2" to 24"';
   document.getElementById('vel-chart-eq').textContent='Single-phase gas · D-W';
   document.getElementById('vel-chart-hint').textContent='v = Q_flowing / A  |  Q_flowing = Q_std × (14.7/P) × (T_R/520) × Z  |  Slope ∝ 1/A — larger pipe = flatter line';
   renderVelLine(flows,(q,di)=>velGas(q,di,i.P,TR,i.Sg,Z),Ve_,Ve_op,null,'MMscfd');
