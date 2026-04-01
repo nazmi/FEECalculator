@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API RP 14E — Topsides Wellhead Piping Sizing</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600&family=Share+Tech+Mono&family=Exo+2:wght@300;400;500&display=swap');
+:root {
+  --bg:#08090b;--bg2:#0e1016;--bg3:#13151c;--bg4:#1a1d26;
+  --border:#1e2130;--border2:#2a2f42;--border3:#363d54;
+  --text:#d4daf0;--text2:#8892b0;--text3:#4a5270;
+  --amber:#e8a020;--amber2:#c07810;--amber-dim:rgba(232,160,32,0.08);
+  --cyan:#20c8e8;--cyan-dim:rgba(32,200,232,0.08);
+  --green:#20d880;--green-dim:rgba(32,216,128,0.08);
+  --red:#e84040;--red-dim:rgba(232,64,64,0.08);
+  --blue:#4080e8;--blue-dim:rgba(64,128,232,0.08);
+  --orange:#e86020;--orange-dim:rgba(232,96,32,0.08);
+  --font-display:'Rajdhani',sans-serif;
+  --font-mono:'Share Tech Mono',monospace;
+  --font-body:'Exo 2',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:13px;line-height:1.5;min-height:100vh;overflow-x:hidden;}
+
+/* HEADER */
+header{background:var(--bg2);border-bottom:1px solid var(--border2);padding:0 24px;display:flex;align-items:stretch;height:52px;}
+.h-logo{display:flex;align-items:center;gap:12px;padding-right:24px;border-right:1px solid var(--border);}
+.h-logo-mark{width:32px;height:32px;border:2px solid var(--amber);display:flex;align-items:center;justify-content:center;}
+.h-logo-mark svg{width:18px;height:18px;fill:none;stroke:var(--amber);stroke-width:2;}
+.h-title{font-family:var(--font-display);font-size:17px;font-weight:600;color:var(--amber);letter-spacing:0.06em;}
+.h-sub{font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-top:1px;}
+.h-nav{display:flex;align-items:center;gap:4px;padding:0 16px;}
+.h-tag{font-family:var(--font-mono);font-size:10px;color:var(--text3);border:1px solid var(--border);padding:2px 8px;margin-left:auto;align-self:center;}
+
+/* FLUID SELECTOR */
+.fluid-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;gap:10px;}
+.fl-label{font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:.1em;margin-right:4px;}
+.fl-btn{font-family:var(--font-mono);font-size:11px;padding:5px 16px;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;letter-spacing:.06em;transition:all .15s;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);}
+.fl-btn:hover{border-color:var(--border3);color:var(--text2);}
+.fl-btn.active{background:var(--amber);border-color:var(--amber);color:#08090b;font-weight:600;}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:288px 1fr;min-height:calc(100vh - 94px);}
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;padding:16px 14px;}
+.main{overflow-y:auto;padding:16px 20px;}
+
+/* SIDEBAR */
+.sec-hd{font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:var(--text3);text-transform:uppercase;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.sec-hd::before{content:'';display:inline-block;width:3px;height:10px;background:var(--amber);}
+.sb-sec{margin-bottom:18px;}
+.field{margin-bottom:11px;}
+.field-lbl{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;color:var(--text2);margin-bottom:4px;font-family:var(--font-body);}
+.field-lbl .eqr{font-family:var(--font-mono);font-size:9px;color:var(--text3);}
+input[type=range]{width:100%;accent-color:var(--amber);cursor:pointer;height:3px;}
+select{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 8px;font-size:11px;font-family:var(--font-body);cursor:pointer;outline:none;}
+select:focus{border-color:var(--amber);}
+.vd{font-family:var(--font-mono);font-size:11px;color:var(--amber);margin-top:2px;}
+.hidden{display:none!important;}
+
+/* CALLOUT */
+.callout{padding:9px 11px;font-size:11px;line-height:1.5;margin-top:6px;font-family:var(--font-body);}
+.callout.amber{background:var(--amber-dim);border-left:2px solid var(--amber);color:var(--text2);}
+.callout.red{background:var(--red-dim);border-left:2px solid var(--red);color:var(--text2);}
+.callout.cyan{background:var(--cyan-dim);border-left:2px solid var(--cyan);color:var(--text2);}
+.callout.green{background:var(--green-dim);border-left:2px solid var(--green);color:var(--text2);}
+.callout-hd{font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;margin-bottom:3px;}
+.callout.amber .callout-hd{color:var(--amber);}
+.callout.red .callout-hd{color:var(--red);}
+.callout.cyan .callout-hd{color:var(--cyan);}
+.callout.green .callout-hd{color:var(--green);}
+
+/* TABS */
+.tab-row{display:flex;gap:0;margin-bottom:16px;border-bottom:1px solid var(--border2);}
+.tab{padding:8px 16px;font-family:var(--font-mono);font-size:11px;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;background:none;border-top:none;border-left:none;border-right:none;letter-spacing:.04em;transition:color .15s;}
+.tab:hover{color:var(--text2);}
+.tab.active{color:var(--amber);border-bottom-color:var(--amber);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* RESULT CARDS */
+.rg{display:grid;gap:8px;margin-bottom:12px;}
+.rg-4{grid-template-columns:repeat(4,1fr);}
+.rg-3{grid-template-columns:repeat(3,1fr);}
+.rg-2{grid-template-columns:repeat(2,1fr);}
+.rc{background:var(--bg2);border:1px solid var(--border);padding:11px 13px;position:relative;overflow:hidden;}
+.rc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.rc.amber::before{background:var(--amber);}
+.rc.cyan::before{background:var(--cyan);}
+.rc.green::before{background:var(--green);}
+.rc.red::before{background:var(--red);}
+.rc.blue::before{background:var(--blue);}
+.rc.orange::before{background:var(--orange);}
+.rc-lbl{font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;color:var(--text3);margin-bottom:4px;}
+.rc-val{font-family:var(--font-display);font-size:24px;font-weight:600;color:var(--text);line-height:1;}
+.rc.amber .rc-val{color:var(--amber);}
+.rc.cyan .rc-val{color:var(--cyan);}
+.rc.green .rc-val{color:var(--green);}
+.rc.red .rc-val{color:var(--red);}
+.rc.blue .rc-val{color:var(--blue);}
+.rc.orange .rc-val{color:var(--orange);}
+.rc-unit{font-size:11px;color:var(--text3);margin-top:3px;font-family:var(--font-body);}
+.rc-eq{font-family:var(--font-mono);font-size:9px;color:var(--text3);margin-top:6px;padding-top:5px;border-top:1px solid var(--border);}
+
+/* BANNER */
+.banner{padding:8px 14px;font-family:var(--font-mono);font-size:11px;margin-bottom:14px;display:flex;align-items:center;gap:10px;border-left:3px solid;}
+.banner.ok{background:var(--green-dim);border-color:var(--green);color:var(--green);}
+.banner.warn{background:var(--amber-dim);border-color:var(--amber);color:var(--amber);}
+.banner.over{background:var(--red-dim);border-color:var(--red);color:var(--red);}
+.banner.info{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan);}
+
+/* CHART WRAP */
+.cw{background:var(--bg2);border:1px solid var(--border);padding:14px;margin-bottom:14px;}
+.ch{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;}
+.ct{font-family:var(--font-display);font-size:13px;font-weight:500;color:var(--text2);letter-spacing:.04em;}
+.ceq{font-family:var(--font-mono);font-size:9px;color:var(--text3);}
+.leg{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;font-size:11px;color:var(--text2);font-family:var(--font-body);}
+.leg span{display:flex;align-items:center;gap:5px;}
+.lsw{width:18px;height:2px;display:inline-block;}
+
+/* TOGGLE */
+.toggle-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap;}
+.tgl-lbl{font-family:var(--font-mono);font-size:10px;color:var(--text3);}
+.tgl{display:flex;border:1px solid var(--border2);}
+.tgl-btn{padding:4px 12px;font-family:var(--font-mono);font-size:10px;background:transparent;border:none;color:var(--text3);cursor:pointer;letter-spacing:.04em;}
+.tgl-btn.active{background:var(--amber);color:#08090b;font-weight:600;}
+
+/* PIPE TABLE */
+.ptbl{width:100%;border-collapse:collapse;font-size:11px;}
+.ptbl th{text-align:left;padding:6px 10px;font-family:var(--font-mono);font-size:9px;letter-spacing:.08em;color:var(--text3);border-bottom:1px solid var(--border2);}
+.ptbl td{padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text2);font-family:var(--font-body);}
+.ptbl tr.selected td{background:rgba(232,160,32,.06);}
+.ptbl tr:hover td{background:var(--bg3);}
+.ptbl td.sz{font-family:var(--font-display);font-size:14px;font-weight:600;color:var(--amber);}
+.ptbl td.ok{color:var(--green);}
+.ptbl td.wn{color:var(--amber);}
+.ptbl td.ov{color:var(--red);}
+.ptbl td.bl{color:var(--cyan);}
+.ptbl td.nm{color:var(--text);}
+.pill{display:inline-block;padding:2px 8px;font-family:var(--font-mono);font-size:9px;letter-spacing:.04em;}
+.p-ok{background:var(--green-dim);color:var(--green);border:1px solid rgba(32,216,128,.3);}
+.p-wn{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(232,160,32,.3);}
+.p-ov{background:var(--red-dim);color:var(--red);border:1px solid rgba(232,64,64,.3);}
+.p-mn{background:var(--cyan-dim);color:var(--cyan);border:1px solid rgba(32,200,232,.3);}
+.p-rec{background:rgba(32,216,128,.15);color:var(--green);border:2px solid var(--green);}
+
+/* WALL THICKNESS */
+.wt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.wt-card{background:var(--bg3);border:1px solid var(--border);padding:10px 12px;}
+.wt-nom{font-family:var(--font-display);font-size:16px;font-weight:600;color:var(--amber);}
+.wt-sch{font-family:var(--font-mono);font-size:11px;color:var(--green);margin-top:2px;}
+.wt-detail{font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-top:4px;line-height:1.6;}
+.wt-card.fail{border-color:var(--red);background:var(--red-dim);}
+.wt-card.fail .wt-sch{color:var(--red);}
+
+/* EQUATION BLOCKS */
+.eq-blk{background:var(--bg3);border:1px solid var(--border);padding:12px 14px;margin-bottom:10px;font-family:var(--font-mono);font-size:11px;line-height:1.8;}
+.eq-num{color:var(--amber);font-size:10px;letter-spacing:.06em;margin-bottom:4px;}
+.eq-main{color:var(--text);font-size:13px;margin:4px 0 6px;font-family:var(--font-display);font-weight:500;letter-spacing:.02em;}
+.eq-vars{font-size:10px;color:var(--text3);line-height:1.7;}
+
+/* TWO COL */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+
+/* PIPE SCHEDULE DATA */
+.hint{font-family:var(--font-mono);font-size:10px;color:var(--text3);margin-top:8px;line-height:1.6;}
+
+@media(max-width:960px){.layout{grid-template-columns:1fr;}.rg-4{grid-template-columns:repeat(2,1fr);}.two-col,.three-col{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-logo">
+    <div class="h-logo-mark">
+      <svg viewBox="0 0 18 18"><circle cx="9" cy="9" r="6"/><line x1="9" y1="3" x2="9" y2="15"/><line x1="3" y1="9" x2="15" y2="9"/></svg>
+    </div>
+    <div>
+      <div class="h-title">API RP 14E</div>
+      <div class="h-sub">Topsides Wellhead Piping · Choke to Manifold</div>
+    </div>
+  </div>
+  <div class="h-nav" style="margin-left:20px;">
+    <span style="font-family:var(--font-mono);font-size:10px;color:var(--text3);">ASME B31.3 · Wall Thickness · Erosional Velocity · Two-Phase</span>
+  </div>
+  <div class="h-tag">2nd Ed. 1991</div>
+</header>
+
+<div class="fluid-bar">
+  <span class="fl-label">FLUID TYPE</span>
+  <button class="fl-btn active" id="btn-twophase" onclick="setFluid('twophase')">TWO-PHASE GAS/LIQ</button>
+  <button class="fl-btn" id="btn-gas" onclick="setFluid('gas')">SINGLE-PHASE GAS</button>
+  <button class="fl-btn" id="btn-liquid" onclick="setFluid('liquid')">SINGLE-PHASE LIQUID</button>
+</div>
+
+<div class="layout">
+<div class="sidebar">
+
+  <div class="sb-sec">
+    <div class="sec-hd">Wellhead / Choke Outlet Conditions</div>
+    <div class="field">
+      <div class="field-lbl">Downstream Choke Pressure <span class="eqr">P (psia)</span></div>
+      <input type="range" id="P_psia" min="50" max="2500" value="725" step="25">
+      <div class="vd" id="P_disp">725 psia · 50.0 bara</div>
+    </div>
+    <div class="field">
+      <div class="field-lbl">Wellhead Temperature <span class="eqr">T</span></div>
+      <input type="range" id="T_F" min="100" max="400" value="284" step="5">
+      <div class="vd" id="T_disp">284°F · 140°C · 744°R</div>
+    </div>
+    <div class="callout amber">
+      <div class="callout-hd">NOTE — CHOKE OUTLET IS CRITICAL</div>
+      Size piping at downstream choke P &amp; T. Gas expands across choke → highest velocity point in the system. API 14E §2.2a(1): min 3 ft straight pipe downstream of choke outlets.
+    </div>
+  </div>
+
+  <div class="sb-sec" id="sec-gas">
+    <div class="sec-hd">Gas Properties</div>
+    <div class="field">
+      <div class="field-lbl">Gas Specific Gravity <span class="eqr">Sg (air=1)</span></div>
+      <input type="range" id="Sg" min="0.55" max="0.85" value="0.70" step="0.01">
+      <div class="vd" id="Sg_disp">0.70</div>
+    </div>
+    <div class="field" id="field-CGR">
+      <div class="field-lbl">CGR <span class="eqr">STB/MMscf</span></div>
+      <input type="range" id="CGR" min="0" max="500" value="12" step="1">
+      <div class="vd" id="CGR_disp">12 STB/MMscf</div>
+    </div>
+    <div class="field">
+      <div class="field-lbl">Gas Rate <span class="eqr">Qg (MMscfd)</span></div>
+      <input type="range" id="Qg" min="1" max="200" value="20" step="1">
+      <div class="vd" id="Qg_disp">20 MMscfd</div>
+    </div>
+  </div>
+
+  <div class="sb-sec" id="sec-liq">
+    <div class="sec-hd">Liquid Properties</div>
+    <div class="field">
+      <div class="field-lbl">Liquid Sp. Gravity <span class="eqr">Sl (water=1)</span></div>
+      <input type="range" id="Sl" min="0.60" max="1.10" value="0.75" step="0.01">
+      <div class="vd" id="Sl_disp">0.75 · condensate</div>
+    </div>
+    <div class="field" id="field-Ql">
+      <div class="field-lbl">Liquid Rate <span class="eqr">Ql (bbl/day)</span></div>
+      <input type="range" id="Ql_in" min="100" max="30000" value="500" step="100">
+      <div class="vd" id="Ql_disp">500 bbl/day</div>
+    </div>
+  </div>
+
+  <div class="sb-sec">
+    <div class="sec-hd">Design Parameters</div>
+
+    <div class="field" id="field-cfactor">
+      <div class="field-lbl">C Factor <span class="eqr">Eq. 2.14</span></div>
+      <select id="C_factor">
+        <option value="100">100 — continuous, H₂S/CO₂/solids</option>
+        <option value="125" selected>125 — continuous, clean, conservative</option>
+        <option value="150">150 — continuous, inhibited, non-corrosive</option>
+        <option value="200">200 — CRA or fully inhibited, no solids</option>
+        <option value="250">250 — intermittent, clean, solids-free</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <div class="field-lbl">Design Pressure <span class="eqr">Pi (psig) — ASME B31.3</span></div>
+      <input type="range" id="Pi_psig" min="100" max="5000" value="1500" step="50">
+      <div class="vd" id="Pi_disp">1500 psig</div>
+    </div>
+
+    <div class="field">
+      <div class="field-lbl">Pipe Material <span class="eqr">ASME B31.3</span></div>
+      <select id="pipe_mat">
+        <option value="17500">ASTM A106 Gr.B Seamless — S=17,500 psi</option>
+        <option value="20000">ASTM A333 Gr.6 — S=20,000 psi</option>
+        <option value="23300">API 5L X52 — S=23,300 psi</option>
+        <option value="26700">API 5L X65 — S=26,700 psi</option>
+        <option value="30000">API 5L X70 — S=30,000 psi</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <div class="field-lbl">Weld Joint Factor E <span class="eqr">ASME B31.3</span></div>
+      <select id="E_factor">
+        <option value="1.00" selected>1.00 — seamless</option>
+        <option value="0.85">0.85 — ERW</option>
+        <option value="0.80">0.80 — furnace butt weld</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <div class="field-lbl">Corrosion Allowance <span class="eqr">inches</span></div>
+      <input type="range" id="CA" min="0" max="0.2" value="0.05" step="0.005">
+      <div class="vd" id="CA_disp">0.050 in (API 14E §2.6 min)</div>
+    </div>
+
+    <div class="field">
+      <div class="field-lbl">Piping Length <span class="eqr">choke to manifold</span></div>
+      <input type="range" id="Len_ft" min="10" max="500" value="100" step="10">
+      <div class="vd" id="Len_disp">100 ft · 30 m</div>
+    </div>
+  </div>
+
+  <div class="sb-sec">
+    <div class="sec-hd">Sand / Solids</div>
+    <div class="field">
+      <div class="field-lbl">Sand Production</div>
+      <select id="sand">
+        <option value="none">None anticipated</option>
+        <option value="possible">Possible — monitor</option>
+        <option value="confirmed">Confirmed — present</option>
+      </select>
+    </div>
+    <div id="sand-note"></div>
+  </div>
+
+</div><!-- /sidebar -->
+
+<div class="main">
+
+  <div class="tab-row">
+    <button class="tab active" onclick="showTab('results',event)">Results</button>
+    <button class="tab" onclick="showTab('velocity',event)">Velocity Chart</button>
+    <button class="tab" onclick="showTab('wallthk',event)">Wall Thickness</button>
+    <button class="tab" onclick="showTab('table',event)">Pipe Size Table</button>
+    <button class="tab" onclick="showTab('reference',event)">API 14E Reference</button>
+  </div>
+
+  <!-- RESULTS TAB -->
+  <div id="tab-results" class="tab-panel active">
+    <div class="toggle-row">
+      <span class="tgl-lbl">VELOCITY</span>
+      <div class="tgl"><button class="tgl-btn" id="ut-fts" onclick="setVU('fts')">ft/s</button><button class="tgl-btn active" id="ut-ms" onclick="setVU('ms')">m/s</button></div>
+      <span class="tgl-lbl">PRESSURE DROP</span>
+      <div class="tgl"><button class="tgl-btn" id="ut-psi" onclick="setDU('psi')">psi/100ft</button><button class="tgl-btn active" id="ut-bkm" onclick="setDU('bkm')">bar/km</button></div>
+    </div>
+    <div class="rg rg-4" id="rg-main"></div>
+    <div class="rg rg-4" id="rg-sec"></div>
+    <div id="status-banner" class="banner ok">—</div>
+    <div class="two-col">
+      <div class="cw">
+        <div class="ch"><div class="ct">Velocity by pipe size</div><div class="ceq">at current flowrate</div></div>
+        <div style="position:relative;height:200px;"><canvas id="velBarCh"></canvas></div>
+      </div>
+      <div class="cw">
+        <div class="ch"><div class="ct">Pressure drop by pipe size</div><div class="ceq" id="dp-eq-lbl">Eq. 2.17a · f=0.015</div></div>
+        <div style="position:relative;height:200px;"><canvas id="dpBarCh"></canvas></div>
+      </div>
+    </div>
+    <div id="sand-banner-results"></div>
+  </div>
+
+  <!-- VELOCITY CHART TAB -->
+  <div id="tab-velocity" class="tab-panel">
+    <div class="cw">
+      <div class="ch"><div class="ct" id="vel-chart-title">Velocity vs flowrate — 2" to 14"</div><div class="ceq" id="vel-chart-eq">API 14E Eq. 2.14</div></div>
+      <div class="leg" id="vel-legend"></div>
+      <div style="position:relative;height:400px;"><canvas id="velLineCh"></canvas></div>
+      <div class="hint" id="vel-chart-hint"></div>
+    </div>
+    <div class="callout cyan">
+      <div class="callout-hd">HOW VELOCITY IS CALCULATED FROM FLOWRATE</div>
+      v = Q_flowing / A_pipe &nbsp;|&nbsp; Q_flowing = Q_std × (P_std/P) × (T/T_std) × Z &nbsp;|&nbsp; Each pipe size line has slope = (P_std/P × T/T_std × Z) / A<br>
+      Lines are linear because at fixed P &amp; T, velocity ∝ flowrate. Slope is flatter for larger pipes (larger A). Changing P shifts all slopes — lower P means gas expands more → higher velocity for same MMscfd → why choke outlet is the critical sizing point.
+    </div>
+  </div>
+
+  <!-- WALL THICKNESS TAB -->
+  <div id="tab-wallthk" class="tab-panel">
+    <div class="rg rg-3" style="margin-bottom:14px;" id="wt-key-cards"></div>
+    <div class="cw">
+      <div class="ch"><div class="ct">ASME B31.3 Eq. 2.19 — Required wall thickness by pipe size</div><div class="ceq">t = Pi·Do / (2·(S·E + Pi·Y))</div></div>
+      <div id="wt-grid" class="wt-grid"></div>
+      <div class="hint">
+        t_required = pressure design thickness (in) · t_total = t_required + corrosion allowance · Schedule shown = minimum acceptable schedule (Sch 40/80/160/XXH)<br>
+        Y = 0.4 (ferrous, T &lt; 900°F, t &lt; D/6) · E = weld joint factor · S = allowable stress (psi) · API 14E §2.6: min 0.050 in corrosion/mechanical allowance for carbon steel
+      </div>
+    </div>
+    <div class="callout amber" style="margin-top:12px;">
+      <div class="callout-hd">API RP 14E §2.7 — JOINT CONNECTIONS</div>
+      Hydrocarbon piping ≥2" diameter → butt welded. Piping ≤1½" → socket welded for: hydrocarbon service above ANSI 600#, above 200°F, subject to vibration, or glycol service. Wellhead piping is typically ANSI 900# or 1500# class.
+    </div>
+    <div class="callout cyan" style="margin-top:10px;">
+      <div class="callout-hd">API RP 14E §2.8 — THERMAL EXPANSION</div>
+      Topsides wellhead piping at high temperature — check expansion criterion: (D × ΔL) / U² ≤ 0.03 per ANSI B31.3. ΔT typically 100–200°F for wellhead piping. Short runs generally self-compensating; L-bends and Z-offsets preferred over expansion bellows per API 14E.
+    </div>
+  </div>
+
+  <!-- PIPE SIZE TABLE TAB -->
+  <div id="tab-table" class="tab-panel">
+    <div class="cw">
+      <div class="ch"><div class="ct">Full pipe sizing — 2" to 14" nominal</div><div class="ceq" id="tbl-conds"></div></div>
+      <div style="overflow-x:auto;">
+        <table class="ptbl">
+          <thead id="tbl-head"></thead>
+          <tbody id="tbl-body"></tbody>
+        </table>
+      </div>
+      <div class="hint" id="tbl-hint"></div>
+    </div>
+  </div>
+
+  <!-- REFERENCE TAB -->
+  <div id="tab-reference" class="tab-panel">
+    <div id="eq-content"></div>
+  </div>
+
+</div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+// ─── PIPE DATA: nominal, Sch 40 ID, OD, schedules (in) ───────────────────
+const PIPES = [
+  {nom:'2"',   id40:2.067, od:2.375, scheds:{40:{t:0.154},80:{t:0.218},160:{t:0.344},XXH:{t:0.436}}},
+  {nom:'3"',   id40:3.068, od:3.500, scheds:{40:{t:0.216},80:{t:0.300},160:{t:0.438},XXH:{t:0.600}}},
+  {nom:'4"',   id40:4.026, od:4.500, scheds:{40:{t:0.237},80:{t:0.337},160:{t:0.531},XXH:{t:0.674}}},
+  {nom:'6"',   id40:6.065, od:6.625, scheds:{40:{t:0.280},80:{t:0.432},160:{t:0.719},XXH:{t:0.864}}},
+  {nom:'8"',   id40:7.981, od:8.625, scheds:{40:{t:0.322},80:{t:0.500},160:{t:0.906},XXH:{t:0.875}}},
+  {nom:'10"',  id40:10.020,od:10.750,scheds:{40:{t:0.365},80:{t:0.500},160:{t:1.125},XXH:{t:1.000}}},
+  {nom:'12"',  id40:11.938,od:12.750,scheds:{40:{t:0.406},80:{t:0.562},160:{t:1.312},XXH:{t:1.000}}},
+  {nom:'14"',  id40:13.124,od:14.000,scheds:{40:{t:0.438},80:{t:0.594},160:{t:1.406},XXH:{t:1.094}}},
+];
+const COLORS=['#e8a020','#20c8e8','#20d880','#4080e8','#bc8cff','#e86020','#e84040','#60c8a0'];
+
+// ─── STATE ────────────────────────────────────────────────────────────────
+let fluid='twophase', vu='ms', du='bkm';
+let CH={vel:null,dp:null,velBar:null};
+
+// ─── PHYSICS ──────────────────────────────────────────────────────────────
+function calcZ(P,TR,Sg){
+  const Tpc=168+325*Sg-12.5*Sg*Sg, Ppc=677+15*Sg-37.5*Sg*Sg;
+  const Tpr=TR/Tpc, Ppr=P/Ppc;
+  return Math.max(0.5,Math.min(1.05,1-(3.52*Ppr/Math.pow(10,0.9813*Tpr))+(0.274*Ppr*Ppr/Math.pow(10,0.8157*Tpr))));
+}
+// API 14E Eq.2.15 — rhoM (lbs/ft³)
+function rhoM(P,TR,Sl,Sg,R,Z){
+  if(R>1e8)R=1e8;
+  return(12409*Sl*P+2.7*R*Sg*P)/(198.7*P+R*TR*Z);
+}
+function rhoGas(P,TR,Sg,Z){return 2.7*Sg*P/(TR*Z);}
+function rhoLiq(Sl){return Sl*62.4;}
+// API 14E Eq.2.14
+function Ve(C,rho){return C/Math.sqrt(rho);}
+// API 14E Eq.2.18
+function massW(Qg,Sg,Ql,Sl){return 3180*Qg*Sg+14.6*Ql*Sl;}
+// API 14E Eq.2.17a (psi/100ft)
+function dp2ph(W,di,rho){return 5.04e-3*W*W/(Math.pow(di,5)*rho);}
+// D-W gas (psi/100ft) f=0.015
+function dpGas(Qg,di,P,TR,Sg,Z){
+  const rho=rhoGas(P,TR,Sg,Z), A=Math.PI*Math.pow(di/2/12,2);
+  const v=Qg*1e6/86400*(14.7/P)*(TR/520)*Z/A;
+  return 0.015*(rho*v*v/2)/(di/12)/144*100;
+}
+function dpLiq(Ql,di,Sl){
+  const rho=rhoLiq(Sl), A=Math.PI*Math.pow(di/2/12,2);
+  const v=Ql*5.6146/86400/A;
+  return 0.015*(rho*v*v/2)/(di/12)/144*100;
+}
+// Velocity (ft/s) in pipe
+function vel2ph(Qg,Ql,di,P,TR,Sg,Z){
+  const A=Math.PI*Math.pow(di/2/12,2);
+  return(Qg*1e6/86400*(14.7/P)*(TR/520)*Z + Ql*5.6146/86400)/A;
+}
+function velGas(Qg,di,P,TR,Sg,Z){
+  return Qg*1e6/86400*(14.7/P)*(TR/520)*Z/(Math.PI*Math.pow(di/2/12,2));
+}
+function velLiq(Ql,di){return Ql*5.6146/86400/(Math.PI*Math.pow(di/2/12,2));}
+
+// ASME B31.3 Eq.2.19 wall thickness (in)
+function wallThk(Pi_psig,Do,S,E,CA,Y=0.4){
+  const t_req=Pi_psig*Do/(2*(S*E+Pi_psig*Y));
+  const t_total=t_req+CA;
+  return{t_req,t_total};
+}
+function minSchedule(t_total,scheds){
+  const order=['40','80','160','XXH'];
+  for(const s of order){if(scheds[s]&&scheds[s].t>=t_total)return s;}
+  return 'EXCEEDS XXH';
+}
+
+// Unit helpers
+function vd(v_fts){return vu==='ms'?v_fts*0.3048:v_fts;}
+function vl(){return vu==='ms'?'m/s':'ft/s';}
+function dd(dp){return du==='bkm'?dp*2.2621:dp;}  // psi/100ft → bar/km
+function dl(){return du==='bkm'?'bar/km':'psi/100ft';}
+function cgrToR(cgr){return cgr===0?1e9:(1e6/cgr)*5.6146;}
+
+// ─── INPUTS ───────────────────────────────────────────────────────────────
+function inp(){
+  return{
+    P:+document.getElementById('P_psia').value,
+    TF:+document.getElementById('T_F').value,
+    Sg:+document.getElementById('Sg').value,
+    Sl:+document.getElementById('Sl').value,
+    CGR:+document.getElementById('CGR').value,
+    Qg:+document.getElementById('Qg').value,
+    Ql:+document.getElementById('Ql_in').value,
+    C:+document.getElementById('C_factor').value,
+    Pi:+document.getElementById('Pi_psig').value,
+    S:+document.getElementById('pipe_mat').value,
+    E:+document.getElementById('E_factor').value,
+    CA:+document.getElementById('CA').value,
+    Len:+document.getElementById('Len_ft').value,
+    sand:document.getElementById('sand').value,
+  };
+}
+
+// ─── FLUID TYPE ───────────────────────────────────────────────────────────
+function setFluid(f){
+  fluid=f;
+  ['twophase','gas','liquid'].forEach(x=>document.getElementById('btn-'+x).classList.toggle('active',x===f));
+  const show=(id,v)=>document.getElementById(id).classList.toggle('hidden',!v);
+  show('sec-gas',f!=='liquid');
+  show('sec-liq',f!=='gas');
+  show('field-CGR',f==='twophase');
+  show('field-Ql',f==='liquid');
+  show('field-cfactor',f!=='liquid');
+  update();
+}
+function setVU(u){vu=u;document.getElementById('ut-fts').classList.toggle('active',u==='fts');document.getElementById('ut-ms').classList.toggle('active',u==='ms');update();}
+function setDU(u){du=u;document.getElementById('ut-psi').classList.toggle('active',u==='psi');document.getElementById('ut-bkm').classList.toggle('active',u==='bkm');update();}
+
+// ─── MAIN UPDATE ──────────────────────────────────────────────────────────
+function update(){
+  const i=inp();
+  const TR=i.TF+460, TC=(i.TF-32)*5/9, Pb=i.P/14.5038;
+
+  // sidebar displays
+  document.getElementById('P_disp').textContent=`${i.P} psia · ${Pb.toFixed(1)} bara`;
+  document.getElementById('T_disp').textContent=`${i.TF}°F · ${TC.toFixed(0)}°C · ${TR}°R`;
+  document.getElementById('Sg_disp').textContent=i.Sg.toFixed(2);
+  const slDesc=i.Sl<0.80?'condensate':i.Sl<0.92?'crude oil':i.Sl<1.01?'water':'brine';
+  document.getElementById('Sl_disp').textContent=`${i.Sl.toFixed(2)} · ${slDesc}`;
+  document.getElementById('CGR_disp').textContent=`${i.CGR} STB/MMscf`;
+  document.getElementById('Qg_disp').textContent=`${i.Qg} MMscfd`;
+  document.getElementById('Ql_disp').textContent=`${i.Ql.toLocaleString()} bbl/day`;
+  document.getElementById('Pi_disp').textContent=`${i.Pi} psig · ${(i.Pi/14.5038).toFixed(0)} barg`;
+  document.getElementById('CA_disp').textContent=`${i.CA.toFixed(3)} in (API 14E §2.6 min 0.050)`;
+  document.getElementById('Len_disp').textContent=`${i.Len} ft · ${(i.Len*0.3048).toFixed(0)} m`;
+
+  // sand note
+  const sn=document.getElementById('sand-note');
+  if(i.sand==='none'){sn.innerHTML='';}
+  else if(i.sand==='possible'){sn.innerHTML=`<div class="callout amber"><div class="callout-hd">API RP 14E §2.2a(1) — SAND MONITORING</div>Install sand probes and cushion flow tees. Use C≤100. Min 3 ft straight pipe downstream of choke outlet. Periodic wall UT surveys.</div>`;}
+  else{sn.innerHTML=`<div class="callout red"><div class="callout-hd">API RP 14E §2.2a(1) — SAND CONFIRMED</div>Significantly reduce fluid velocity below Ve. Install sand probes, cushion tees, 3 ft straight run post-choke. C=100 maximum. Consider erosion-resistant alloy bends. Velocity significantly below 80% Ve recommended.</div>`;}
+
+  if(fluid==='twophase')updateTP(i,TR,TC);
+  else if(fluid==='gas')updateGas(i,TR,TC);
+  else updateLiq(i,TR,TC);
+
+  updateWallThk(i);
+  updateEqRef();
+}
+
+// ─── TWO-PHASE ────────────────────────────────────────────────────────────
+function updateTP(i,TR,TC){
+  const Z=calcZ(i.P,TR,i.Sg);
+  const R=cgrToR(i.CGR);
+  const Ql_calc=i.CGR>0?i.Qg*i.CGR:0;
+  const rho=rhoM(i.P,TR,i.Sl,i.Sg,R,Z);
+  const Ve_=Ve(i.C,rho), Ve_op=Ve_*0.8;
+  const W=massW(i.Qg,i.Sg,Ql_calc,i.Sl);
+  const rhoSI=rho*16.0185;
+
+  document.getElementById('rg-main').innerHTML=`
+    <div class="rc amber"><div class="rc-lbl">MIXTURE DENSITY ρm</div><div class="rc-val">${rho.toFixed(2)}</div><div class="rc-unit">lbs/ft³ · ${rhoSI.toFixed(1)} kg/m³</div><div class="rc-eq">API 14E Eq. 2.15</div></div>
+    <div class="rc amber"><div class="rc-lbl">EROSIONAL VELOCITY Ve</div><div class="rc-val">${vd(Ve_).toFixed(2)}</div><div class="rc-unit">${vl()}</div><div class="rc-eq">Eq. 2.14 · C=${i.C}</div></div>
+    <div class="rc orange"><div class="rc-lbl">80% Ve OPERATING LIMIT</div><div class="rc-val">${vd(Ve_op).toFixed(2)}</div><div class="rc-unit">${vl()}</div><div class="rc-eq">recommended practice</div></div>
+    <div class="rc cyan"><div class="rc-lbl">MIN VELOCITY (§2.2b)</div><div class="rc-val">${vd(10).toFixed(2)}</div><div class="rc-unit">${vl()} · anti-slug</div><div class="rc-eq">10 ft/s · 3.05 m/s</div></div>`;
+
+  document.getElementById('rg-sec').innerHTML=`
+    <div class="rc"><div class="rc-lbl">Z-FACTOR</div><div class="rc-val">${Z.toFixed(4)}</div><div class="rc-unit">Papay correlation</div><div class="rc-eq">—</div></div>
+    <div class="rc"><div class="rc-lbl">MASS RATE W</div><div class="rc-val">${Math.round(W).toLocaleString()}</div><div class="rc-unit">lbs/hr</div><div class="rc-eq">Eq. 2.18</div></div>
+    <div class="rc"><div class="rc-lbl">GAS/LIQ RATIO R</div><div class="rc-val">${i.CGR===0?'∞':Math.round(R/1000)+'k'}</div><div class="rc-unit">ft³/bbl std</div><div class="rc-eq">from CGR</div></div>
+    <div class="rc"><div class="rc-lbl">LIQUID RATE</div><div class="rc-val">${Math.round(Ql_calc).toLocaleString()}</div><div class="rc-unit">bbl/day</div><div class="rc-eq">Qg × CGR</div></div>`;
+
+  setBanner(vel2ph(i.Qg,Ql_calc,8.0,i.P,TR,i.Sg,Z), Ve_, Ve_op, 10);
+  sandBanner(i.sand);
+  renderVelBar_TP(i,TR,Z,Ve_,Ve_op,Ql_calc);
+  renderDpBar_TP(W,rho,i.Len);
+  renderVelLine_TP(i,TR,Z,rho,Ve_,Ve_op,Ql_calc);
+  renderTable_TP(i,TR,Z,rho,Ve_,Ve_op,W,Ql_calc);
+}
+
+// ─── SINGLE GAS ───────────────────────────────────────────────────────────
+function updateGas(i,TR,TC){
+  const Z=calcZ(i.P,TR,i.Sg);
+  const rho=rhoGas(i.P,TR,i.Sg,Z);
+  const Ve_=Ve(i.C,rho), Ve_op=Ve_*0.8;
+  const W=massW(i.Qg,i.Sg,0,1);
+  const rhoSI=rho*16.0185;
+
+  document.getElementById('rg-main').innerHTML=`
+    <div class="rc amber"><div class="rc-lbl">GAS DENSITY ρg</div><div class="rc-val">${rho.toFixed(2)}</div><div class="rc-unit">lbs/ft³ · ${rhoSI.toFixed(1)} kg/m³</div><div class="rc-eq">ρ = 2.7·Sg·P/(T·Z)</div></div>
+    <div class="rc amber"><div class="rc-lbl">EROSIONAL VELOCITY Ve</div><div class="rc-val">${vd(Ve_).toFixed(2)}</div><div class="rc-unit">${vl()}</div><div class="rc-eq">Eq. 2.14 · C=${i.C}</div></div>
+    <div class="rc orange"><div class="rc-lbl">80% Ve OPERATING LIMIT</div><div class="rc-val">${vd(Ve_op).toFixed(2)}</div><div class="rc-unit">${vl()}</div><div class="rc-eq">recommended practice</div></div>
+    <div class="rc"><div class="rc-lbl">Z-FACTOR</div><div class="rc-val">${Z.toFixed(4)}</div><div class="rc-unit">dimensionless</div><div class="rc-eq">Papay</div></div>`;
+
+  document.getElementById('rg-sec').innerHTML=`
+    <div class="rc"><div class="rc-lbl">MASS RATE W</div><div class="rc-val">${Math.round(W).toLocaleString()}</div><div class="rc-unit">lbs/hr</div><div class="rc-eq">Eq. 2.18 gas only</div></div>
+    <div class="rc"><div class="rc-lbl">MOL WEIGHT</div><div class="rc-val">${(i.Sg*28.97).toFixed(1)}</div><div class="rc-unit">g/mol</div><div class="rc-eq">Mg = Sg×28.97</div></div>
+    <div class="rc"><div class="rc-lbl">P DOWNSTREAM</div><div class="rc-val">${(i.P/14.5038).toFixed(1)}</div><div class="rc-unit">bara</div><div class="rc-eq">choke outlet</div></div>
+    <div class="rc"><div class="rc-lbl">T WELLHEAD</div><div class="rc-val">${TC.toFixed(0)}</div><div class="rc-unit">°C · ${TR}°R</div><div class="rc-eq">—</div></div>`;
+
+  setBanner(velGas(i.Qg,8.0,i.P,TR,i.Sg,Z), Ve_, Ve_op, null);
+  sandBanner(i.sand);
+  renderVelBar_Gas(i,TR,Z,Ve_,Ve_op);
+  renderDpBar_Gas(i,TR,Z,i.Len);
+  renderVelLine_Gas(i,TR,Z,rho,Ve_,Ve_op);
+  renderTable_Gas(i,TR,Z,rho,Ve_,Ve_op,W);
+}
+
+// ─── SINGLE LIQUID ────────────────────────────────────────────────────────
+function updateLiq(i,TR,TC){
+  const rho=rhoLiq(i.Sl), Vmax=15.0;
+  const W=14.6*i.Ql*i.Sl;
+  const rhoSI=rho*16.0185;
+
+  document.getElementById('rg-main').innerHTML=`
+    <div class="rc amber"><div class="rc-lbl">LIQUID DENSITY</div><div class="rc-val">${rho.toFixed(1)}</div><div class="rc-unit">lbs/ft³ · ${rhoSI.toFixed(0)} kg/m³</div><div class="rc-eq">ρ = Sl × 62.4</div></div>
+    <div class="rc amber"><div class="rc-lbl">MAX VELOCITY (§2.2a)</div><div class="rc-val">${vd(Vmax).toFixed(2)}</div><div class="rc-unit">${vl()} · API 14E liquid limit</div><div class="rc-eq">15 ft/s · 4.57 m/s</div></div>
+    <div class="rc orange"><div class="rc-lbl">80% OF MAX</div><div class="rc-val">${vd(Vmax*0.8).toFixed(2)}</div><div class="rc-unit">${vl()}</div><div class="rc-eq">conservative practice</div></div>
+    <div class="rc green"><div class="rc-lbl">LIQUID RATE</div><div class="rc-val">${i.Ql.toLocaleString()}</div><div class="rc-unit">bbl/day</div><div class="rc-eq">user input</div></div>`;
+
+  document.getElementById('rg-sec').innerHTML=`
+    <div class="rc"><div class="rc-lbl">MASS RATE</div><div class="rc-val">${Math.round(W).toLocaleString()}</div><div class="rc-unit">lbs/hr</div><div class="rc-eq">14.6·Ql·Sl</div></div>
+    <div class="rc"><div class="rc-lbl">SP. GRAVITY</div><div class="rc-val">${i.Sl.toFixed(2)}</div><div class="rc-unit">water=1</div><div class="rc-eq">—</div></div>
+    <div class="rc"><div class="rc-lbl">FLUID TYPE</div><div class="rc-val" style="font-size:16px;">${i.Sl<0.80?'Condy':i.Sl<0.92?'Crude':i.Sl<1.01?'Water':'Brine'}</div><div class="rc-unit">from Sl</div><div class="rc-eq">—</div></div>
+    <div class="rc"><div class="rc-lbl">LINE LENGTH</div><div class="rc-val">${i.Len}</div><div class="rc-unit">ft · ${(i.Len*0.3048).toFixed(0)} m</div><div class="rc-eq">choke to manifold</div></div>`;
+
+  setBanner(velLiq(i.Ql,8.0), Vmax, Vmax*0.8, null);
+  sandBanner(i.sand);
+  renderVelBar_Liq(i,Vmax);
+  renderDpBar_Liq(i,i.Len);
+  renderVelLine_Liq(i,Vmax);
+  renderTable_Liq(i,rho,Vmax,W);
+}
+
+// ─── BANNER ───────────────────────────────────────────────────────────────
+function setBanner(v_ref, Ve_lim, Ve_op, Vmin){
+  const b=document.getElementById('status-banner');
+  const v8d=vd(v_ref).toFixed(2), vl_=vl();
+  if(v_ref>Ve_lim){b.className='banner over';b.innerHTML=`&#9650; REF 8": ${v8d} ${vl_} — EXCEEDS Ve LIMIT (${vd(Ve_lim).toFixed(2)} ${vl_}) — pipe too small`;}
+  else if(v_ref>Ve_op){b.className='banner warn';b.innerHTML=`&#9654; REF 8": ${v8d} ${vl_} — BETWEEN 80–100% Ve — at erosional limit`;}
+  else if(Vmin&&v_ref<Vmin){b.className='banner info';b.innerHTML=`&#9660; REF 8": ${v8d} ${vl_} — below ${vd(Vmin).toFixed(2)} ${vl_} minimum — slugging risk (API 14E §2.2b)`;}
+  else{b.className='banner ok';b.innerHTML=`&#9679; REF 8": ${v8d} ${vl_} — within operating envelope`;}
+}
+function sandBanner(sand){
+  const el=document.getElementById('sand-banner-results');
+  if(sand==='none'){el.innerHTML='';}
+  else if(sand==='possible'){el.innerHTML=`<div class="banner warn" style="margin-top:8px;">&#9654; SAND POSSIBLE — API RP 14E §2.2a(1): install sand probes, cushion tees, 3 ft straight pipe downstream of choke outlet. Consider C=100.</div>`;}
+  else{el.innerHTML=`<div class="banner over" style="margin-top:8px;">&#9650; SAND CONFIRMED — reduce velocity significantly below Ve. C=100 max. Sand probes and cushion tees mandatory (API 14E §2.2a(1)).</div>`;}
+}
+
+// ─── VELOCITY BAR CHARTS ──────────────────────────────────────────────────
+function renderVelBar(pipeVels, Ve_lim, Ve_op, Vmin){
+  const vl_=vl();
+  const cfg={type:'bar',data:{labels:PIPES.map(p=>p.nom),datasets:[
+    {label:'velocity',data:pipeVels,backgroundColor:pipeVels.map((v,i)=>{const fts=vu==='ms'?v/0.3048:v;return fts>Ve_lim?'rgba(232,64,64,0.7)':fts>Ve_op?'rgba(232,160,32,0.7)':'rgba(32,216,128,0.5)';}),borderRadius:2},
+    {type:'line',label:'Ve',data:PIPES.map(()=>vd(Ve_lim).toFixed(3)),borderColor:'#e84040',borderDash:[5,4],borderWidth:2,pointRadius:0,backgroundColor:'transparent'},
+    {type:'line',label:'80%Ve',data:PIPES.map(()=>vd(Ve_op).toFixed(3)),borderColor:'#888',borderDash:[4,4],borderWidth:1.5,pointRadius:0,backgroundColor:'transparent'},
+  ]},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#4a5270',font:{size:10}},grid:{color:'rgba(30,33,48,0.8)'}},y:{title:{display:true,text:vl_,color:'#4a5270',font:{size:10}},ticks:{color:'#4a5270',font:{size:10}},grid:{color:'rgba(30,33,48,0.8)'},min:0}}}};
+  if(Vmin) cfg.data.datasets.push({type:'line',label:'min',data:PIPES.map(()=>vd(Vmin).toFixed(3)),borderColor:'#20c8e8',borderDash:[3,3],borderWidth:1.5,pointRadius:0,backgroundColor:'transparent'});
+  if(CH.velBar){CH.velBar.data=cfg.data;CH.velBar.update('none');}else{CH.velBar=new Chart(document.getElementById('velBarCh'),cfg);}
+}
+function renderVelBar_TP(i,TR,Z,Ve_,Ve_op,Ql){renderVelBar(PIPES.map(p=>parseFloat(vd(vel2ph(i.Qg,Ql,p.id40,i.P,TR,i.Sg,Z)).toFixed(3))),Ve_,Ve_op,10);}
+function renderVelBar_Gas(i,TR,Z,Ve_,Ve_op){renderVelBar(PIPES.map(p=>parseFloat(vd(velGas(i.Qg,p.id40,i.P,TR,i.Sg,Z)).toFixed(3))),Ve_,Ve_op,null);}
+function renderVelBar_Liq(i,Vmax){renderVelBar(PIPES.map(p=>parseFloat(vd(velLiq(i.Ql,p.id40)).toFixed(3))),Vmax,Vmax*0.8,null);}
+
+// ─── DELTA-P BAR CHARTS ───────────────────────────────────────────────────
+function renderDpBar(dpArr,title,len_ft){
+  document.getElementById('dp-eq-lbl').textContent=title;
+  const dl_=dl();
+  if(CH.dp){CH.dp.data.datasets[0].data=dpArr;CH.dp.update('none');}
+  else{CH.dp=new Chart(document.getElementById('dpBarCh'),{type:'bar',data:{labels:PIPES.map(p=>p.nom),datasets:[{label:dl_,data:dpArr,backgroundColor:COLORS,borderRadius:2}]},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:i=>` ${parseFloat(i.formattedValue).toFixed(4)} ${dl_}`}}},scales:{x:{ticks:{color:'#4a5270',font:{size:10}},grid:{color:'rgba(30,33,48,0.8)'}},y:{title:{display:true,text:dl_,color:'#4a5270',font:{size:10}},ticks:{color:'#4a5270',font:{size:10}},grid:{color:'rgba(30,33,48,0.8)'}}}}}); }
+}
+function renderDpBar_TP(W,rho,len_ft){renderDpBar(PIPES.map(p=>parseFloat(dd(dp2ph(W,p.id40,rho)).toFixed(4))),'Eq. 2.17a · f=0.015',len_ft);}
+function renderDpBar_Gas(i,TR,Z,len_ft){renderDpBar(PIPES.map(p=>parseFloat(dd(dpGas(i.Qg,p.id40,i.P,TR,i.Sg,Z)).toFixed(4))),'Darcy-Weisbach · f=0.015',len_ft);}
+function renderDpBar_Liq(i,len_ft){renderDpBar(PIPES.map(p=>parseFloat(dd(dpLiq(i.Ql,p.id40,i.Sl)).toFixed(4))),'Darcy-Weisbach · f=0.015',len_ft);}
+
+// ─── VELOCITY LINE CHARTS ─────────────────────────────────────────────────
+function renderVelLine(flowArr, velFn, Ve_lim, Ve_op, Vmin, xlabel){
+  const vl_=vl();
+  const datasets=PIPES.map((p,idx)=>({label:p.nom,data:flowArr.map(q=>parseFloat(vd(velFn(q,p.id40)).toFixed(3))),borderColor:COLORS[idx],backgroundColor:'transparent',borderWidth:2,pointRadius:0,tension:0.15}));
+  datasets.push({label:'Ve',data:flowArr.map(()=>parseFloat(vd(Ve_lim).toFixed(3))),borderColor:'#e84040',borderDash:[6,4],borderWidth:2,pointRadius:0,backgroundColor:'transparent'});
+  datasets.push({label:'80%Ve',data:flowArr.map(()=>parseFloat(vd(Ve_op).toFixed(3))),borderColor:'#666',borderDash:[4,4],borderWidth:1.5,pointRadius:0,backgroundColor:'transparent'});
+  if(Vmin) datasets.push({label:'10ft/s',data:flowArr.map(()=>parseFloat(vd(Vmin).toFixed(3))),borderColor:'#20c8e8',borderDash:[3,3],borderWidth:1.5,pointRadius:0,backgroundColor:'transparent'});
+  document.getElementById('vel-legend').innerHTML=PIPES.map((p,i)=>`<span><span class="lsw" style="background:${COLORS[i]};"></span>${p.nom}</span>`).join('')+`<span><span class="lsw" style="background:#e84040;"></span>Ve limit</span><span><span class="lsw" style="background:#666;"></span>80% Ve</span>`;
+  if(CH.vel){CH.vel.data.labels=flowArr;CH.vel.data.datasets=datasets;CH.vel.options.scales.x.title.text=xlabel;CH.vel.options.scales.y.title.text=vl_;CH.vel.update('none');}
+  else{CH.vel=new Chart(document.getElementById('velLineCh'),{type:'line',data:{labels:flowArr,datasets},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,filter:t=>!['Ve','80%Ve','10ft/s'].includes(t.dataset.label),callbacks:{title:t=>`Q = ${t[0].label}`,label:t=>` ${t.dataset.label}: ${parseFloat(t.formattedValue).toFixed(2)} ${vl_}`}}},scales:{x:{title:{display:true,text:xlabel,color:'#4a5270',font:{size:11}},ticks:{color:'#4a5270',font:{size:10},autoSkip:true,maxTicksLimit:10},grid:{color:'rgba(30,33,48,0.8)'}},y:{title:{display:true,text:vl_,color:'#4a5270',font:{size:11}},ticks:{color:'#4a5270',font:{size:10}},grid:{color:'rgba(30,33,48,0.8)'},min:0}}}});}
+}
+function renderVelLine_TP(i,TR,Z,rho,Ve_,Ve_op,Ql){
+  const flows=[];for(let q=1;q<=150;q+=2)flows.push(q);
+  document.getElementById('vel-chart-title').textContent='Velocity vs gas flowrate — 2" to 14"';
+  document.getElementById('vel-chart-eq').textContent='Two-phase · API 14E Eq. 2.14';
+  document.getElementById('vel-chart-hint').textContent='v = (Q_gas_flowing + Q_liq_flowing) / A_pipe  |  Q_gas_flowing = Qg × (14.7/P) × (T/520) × Z  |  Lines linear because velocity ∝ flowrate at fixed P, T';
+  renderVelLine(flows,(q,di)=>vel2ph(q,i.CGR>0?q*i.CGR:0,di,i.P,TR,i.Sg,Z),Ve_,Ve_op,10,'MMscfd');
+}
+function renderVelLine_Gas(i,TR,Z,rho,Ve_,Ve_op){
+  const flows=[];for(let q=1;q<=150;q+=2)flows.push(q);
+  document.getElementById('vel-chart-title').textContent='Velocity vs gas flowrate — 2" to 14"';
+  document.getElementById('vel-chart-eq').textContent='Single-phase gas · D-W';
+  document.getElementById('vel-chart-hint').textContent='v = Q_flowing / A  |  Q_flowing = Q_std × (14.7/P) × (T_R/520) × Z  |  Slope ∝ 1/A — larger pipe = flatter line';
+  renderVelLine(flows,(q,di)=>velGas(q,di,i.P,TR,i.Sg,Z),Ve_,Ve_op,null,'MMscfd');
+}
+function renderVelLine_Liq(i,Vmax){
+  const flows=[];for(let q=200;q<=30000;q+=300)flows.push(q);
+  document.getElementById('vel-chart-title').textContent='Velocity vs liquid flowrate — 2" to 14"';
+  document.getElementById('vel-chart-eq').textContent='Single-phase liquid · D-W';
+  document.getElementById('vel-chart-hint').textContent='v = Q_liquid / A  |  Liquid incompressible — no P/T correction needed  |  Q_ft3s = bbl/day × 5.6146 / 86400';
+  renderVelLine(flows,(q,di)=>velLiq(q,di),Vmax,Vmax*0.8,null,'bbl/day');
+}
+
+// ─── WALL THICKNESS ───────────────────────────────────────────────────────
+function updateWallThk(i){
+  const Y=0.4;
+  // Key result cards
+  const tRef=wallThk(i.Pi,PIPES[2].od,i.S,i.E,i.CA,Y); // reference 4" pipe
+  document.getElementById('wt-key-cards').innerHTML=`
+    <div class="rc blue"><div class="rc-lbl">DESIGN PRESSURE Pi</div><div class="rc-val">${i.Pi}</div><div class="rc-unit">psig · ${(i.Pi/14.5038).toFixed(0)} barg</div><div class="rc-eq">ASME B31.3 Eq. 2.19</div></div>
+    <div class="rc"><div class="rc-lbl">ALLOWABLE STRESS S</div><div class="rc-val">${(i.S/1000).toFixed(1)}k</div><div class="rc-unit">psi · E=${i.E}</div><div class="rc-eq">material+weld factors</div></div>
+    <div class="rc"><div class="rc-lbl">CORROSION ALLOW.</div><div class="rc-val">${(i.CA*1000).toFixed(0)}</div><div class="rc-unit">thou (${i.CA.toFixed(3)} in)</div><div class="rc-eq">API 14E §2.6 min=50 thou</div></div>`;
+
+  // Per-pipe schedule cards
+  document.getElementById('wt-grid').innerHTML=PIPES.map(p=>{
+    const{t_req,t_total}=wallThk(i.Pi,p.od,i.S,i.E,i.CA,Y);
+    const minSch=minSchedule(t_total,p.scheds);
+    const ok=minSch!=='EXCEEDS XXH';
+    const schT=ok?p.scheds[minSch].t:null;
+    const id_act=ok?(p.od-2*schT).toFixed(3):'N/A';
+    return `<div class="wt-card${ok?'':' fail'}">
+      <div class="wt-nom">${p.nom}</div>
+      <div class="wt-sch">${ok?'Min: Sch '+minSch:' EXCEEDS XXH — SPECIAL'}</div>
+      <div class="wt-detail">
+        t_req = ${t_req.toFixed(4)}" (pressure)<br>
+        t_total = ${t_total.toFixed(4)}" (incl. CA)<br>
+        ${ok?`Actual t = ${schT.toFixed(3)}" · ID = ${id_act}"`:'Special wall required'}<br>
+        OD = ${p.od}"
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── PIPE SIZE TABLE ──────────────────────────────────────────────────────
+function renderTable_TP(i,TR,Z,rho,Ve_,Ve_op,W,Ql){
+  const vl_=vl(), dl_=dl();
+  document.getElementById('tbl-conds').textContent=`P=${i.P} psia · T=${i.TF}°F · CGR=${i.CGR} · Qg=${i.Qg} MMscfd`;
+  document.getElementById('tbl-head').innerHTML=`<tr><th>Nom.</th><th>Sch</th><th>ID (in)</th><th>Vel (${vl_})</th><th>Ve (${vl_})</th><th>%Ve</th><th>ΔP (${dl_})</th><th>ΔP total (bar)</th><th>Status</th></tr>`;
+  document.getElementById('tbl-hint').textContent='OK = v>10ft/s & v<80%Ve · UNDER MIN = v<10ft/s slugging risk · AT LIMIT = 80-100%Ve · OVER = v>Ve. Recommended = green border.';
+  const{t_req:tr,t_total:tt}=wallThk(i.Pi,PIPES[0].od,i.S,i.E,i.CA);
+  document.getElementById('tbl-body').innerHTML=PIPES.map((p,idx)=>{
+    const{t_req,t_total}=wallThk(i.Pi,p.od,i.S,i.E,i.CA);
+    const minSch=minSchedule(t_total,p.scheds);
+    const id_use=minSch!=='EXCEEDS XXH'?p.od-2*p.scheds[minSch].t:p.id40;
+    const v=vel2ph(i.Qg,Ql,id_use,i.P,TR,i.Sg,Z);
+    const vdisp=vd(v).toFixed(2), pct=v/Ve_*100;
+    const dp_=dd(dp2ph(W,id_use,rho)).toFixed(4);
+    const dpTot=(dp2ph(W,id_use,rho)*i.Len/100*0.06895).toFixed(3);
+    let st,pc; if(v>Ve_){st='OVER Ve';pc='p-ov';}else if(v>Ve_op){st='AT LIMIT';pc='p-wn';}else if(v<10){st='UNDER MIN';pc='p-mn';}else{st='OK';pc='p-ok';}
+    const isRec=v<Ve_op&&v>=10;
+    const vc=v>Ve_?'ov':v>Ve_op?'wn':v<10?'bl':'ok';
+    const ptc=pct>100?'ov':pct>80?'wn':'ok';
+    return `<tr${isRec?' class="selected"':''}><td class="sz">${p.nom}</td><td class="nm">${minSch}</td><td class="nm">${id_use.toFixed(3)}</td><td class="${vc}">${vdisp}</td><td class="nm">${vd(Ve_).toFixed(2)}</td><td class="${ptc}">${pct.toFixed(0)}%</td><td class="nm">${dp_}</td><td class="nm">${dpTot}</td><td><span class="pill ${isRec?'p-rec':pc}">${isRec?'RECOMMEND':st}</span></td></tr>`;
+  }).join('');
+}
+
+function renderTable_Gas(i,TR,Z,rho,Ve_,Ve_op,W){
+  const vl_=vl(), dl_=dl();
+  document.getElementById('tbl-conds').textContent=`P=${i.P} psia · T=${i.TF}°F · Sg=${i.Sg} · Qg=${i.Qg} MMscfd`;
+  document.getElementById('tbl-head').innerHTML=`<tr><th>Nom.</th><th>Sch</th><th>ID (in)</th><th>Vel (${vl_})</th><th>Ve (${vl_})</th><th>%Ve</th><th>ΔP (${dl_})</th><th>ΔP total (bar)</th><th>Status</th></tr>`;
+  document.getElementById('tbl-hint').textContent='OK = v<80%Ve · AT LIMIT = 80-100%Ve · OVER = v>Ve · Recommended highlighted';
+  document.getElementById('tbl-body').innerHTML=PIPES.map((p,idx)=>{
+    const{t_total}=wallThk(i.Pi,p.od,i.S,i.E,i.CA);
+    const minSch=minSchedule(t_total,p.scheds);
+    const id_use=minSch!=='EXCEEDS XXH'?p.od-2*p.scheds[minSch].t:p.id40;
+    const v=velGas(i.Qg,id_use,i.P,TR,i.Sg,Z);
+    const vdisp=vd(v).toFixed(2), pct=v/Ve_*100;
+    const dp_=dd(dpGas(i.Qg,id_use,i.P,TR,i.Sg,Z)).toFixed(4);
+    const dpTot=(dpGas(i.Qg,id_use,i.P,TR,i.Sg,Z)*i.Len/100*0.06895).toFixed(4);
+    let st,pc; if(v>Ve_){st='OVER Ve';pc='p-ov';}else if(v>Ve_op){st='AT LIMIT';pc='p-wn';}else{st='OK';pc='p-ok';}
+    const isRec=v<Ve_op;
+    const vc=v>Ve_?'ov':v>Ve_op?'wn':'ok';
+    return `<tr${isRec&&idx<4?' class="selected"':''}><td class="sz">${p.nom}</td><td class="nm">${minSch}</td><td class="nm">${id_use.toFixed(3)}</td><td class="${vc}">${vdisp}</td><td class="nm">${vd(Ve_).toFixed(2)}</td><td class="${vc}">${pct.toFixed(0)}%</td><td class="nm">${dp_}</td><td class="nm">${dpTot}</td><td><span class="pill ${pc}">${st}</span></td></tr>`;
+  }).join('');
+}
+
+function renderTable_Liq(i,rho,Vmax,W){
+  const vl_=vl(), dl_=dl();
+  document.getElementById('tbl-conds').textContent=`Ql=${i.Ql.toLocaleString()} bbl/day · Sl=${i.Sl}`;
+  document.getElementById('tbl-head').innerHTML=`<tr><th>Nom.</th><th>Sch</th><th>ID (in)</th><th>Vel (${vl_})</th><th>Max (${vl_})</th><th>%Max</th><th>ΔP (${dl_})</th><th>ΔP total (bar)</th><th>Status</th></tr>`;
+  document.getElementById('tbl-hint').textContent='Max liquid velocity = 15 ft/s per API 14E §2.2a (frictional heating limit for hydrocarbons)';
+  document.getElementById('tbl-body').innerHTML=PIPES.map((p,idx)=>{
+    const{t_total}=wallThk(i.Pi,p.od,i.S,i.E,i.CA);
+    const minSch=minSchedule(t_total,p.scheds);
+    const id_use=minSch!=='EXCEEDS XXH'?p.od-2*p.scheds[minSch].t:p.id40;
+    const v=velLiq(i.Ql,id_use), pct=v/Vmax*100;
+    const vdisp=vd(v).toFixed(2);
+    const dp_=dd(dpLiq(i.Ql,id_use,i.Sl)).toFixed(4);
+    const dpTot=(dpLiq(i.Ql,id_use,i.Sl)*i.Len/100*0.06895).toFixed(4);
+    let st,pc; if(v>Vmax){st='OVER MAX';pc='p-ov';}else if(v>Vmax*0.8){st='AT LIMIT';pc='p-wn';}else{st='OK';pc='p-ok';}
+    const isRec=v<Vmax*0.8;
+    const vc=v>Vmax?'ov':v>Vmax*0.8?'wn':'ok';
+    return `<tr${isRec&&idx<4?' class="selected"':''}><td class="sz">${p.nom}</td><td class="nm">${minSch}</td><td class="nm">${id_use.toFixed(3)}</td><td class="${vc}">${vdisp}</td><td class="nm">${vd(Vmax).toFixed(2)}</td><td class="${vc}">${pct.toFixed(0)}%</td><td class="nm">${dp_}</td><td class="nm">${dpTot}</td><td><span class="pill ${pc}">${st}</span></td></tr>`;
+  }).join('');
+}
+
+// ─── EQUATION REFERENCE ───────────────────────────────────────────────────
+function updateEqRef(){
+  const isTP=fluid==='twophase', isG=fluid==='gas', isL=fluid==='liquid';
+  let h='';
+  if(!isL){h+=`<div class="eq-blk"><div class="eq-num">API RP 14E — EQ. 2.14 · EROSIONAL VELOCITY</div><div class="eq-main">Ve = C / √ρm</div><div class="eq-vars">Ve = erosional velocity (ft/s) · C = 100 continuous corrosive/solids · 125 conservative solids-free · 150–200 non-corrosive inhibited · 250 intermittent max<br>ρm = mixture density (lbs/ft³) from Eq. 2.15 for two-phase, or ρg for single-phase gas</div></div>`;}
+  if(isTP){h+=`<div class="eq-blk"><div class="eq-num">API RP 14E — EQ. 2.15 · GAS/LIQUID MIXTURE DENSITY</div><div class="eq-main">ρm = (12409·Sl·P + 2.7·R·Sg·P) / (198.7·P + R·T·Z)</div><div class="eq-vars">P = operating pressure (psia) · Sl = liquid SG (water=1) · R = gas/liquid ratio (ft³/bbl std) · T = temperature (°R = °F+460) · Sg = gas SG (air=1) · Z = compressibility factor<br>Note: R = 5.6146×10⁶/CGR when CGR in STB/MMscf (5.6146 ft³/bbl conversion)</div></div>`;}
+  if(isTP||isG){h+=`<div class="eq-blk"><div class="eq-num">API RP 14E — EQ. 2.17a · PRESSURE DROP (f=0.015, two-phase)</div><div class="eq-main">ΔP = (5.04×10⁻³ × W²) / (di⁵ × ρm)</div><div class="eq-vars">ΔP = psi/100ft · W = total mass rate lbs/hr (Eq.2.18) · di = ID inches · ρm = lbs/ft³ · Moody f=0.015 assumed average<br>Limit use to low ΔP cases — inaccurate for high ΔP with density changes</div></div>`;}
+  if(isTP||isG){h+=`<div class="eq-blk"><div class="eq-num">API RP 14E — EQ. 2.18 · TOTAL MASS RATE</div><div class="eq-main">W = 3180·Qg·Sg + 14.6·Ql·Sl</div><div class="eq-vars">W = lbs/hr · Qg = MMscfd at 14.7 psia 60°F · Sg = gas SG · Ql = bbl/day · Sl = liquid SG</div></div>`;}
+  if(isTP){h+=`<div class="eq-blk"><div class="eq-num">API RP 14E — §2.2b · MINIMUM VELOCITY (two-phase)</div><div class="eq-main">Vmin = 10 ft/s (3.05 m/s)</div><div class="eq-vars">Minimum to minimise slugging at separation equipment. Critical in long lines with elevation changes.<br>For short topsides runs this is secondary to erosional velocity — but check nonetheless.</div></div>`;}
+  if(isL){h+=`<div class="eq-blk"><div class="eq-num">API RP 14E — §2.2a · LIQUID VELOCITY LIMIT</div><div class="eq-main">Vmax = 15 ft/s (4.57 m/s)</div><div class="eq-vars">Pure liquid without entrained gas — limit is frictional heating. Hydrocarbon liquid at 15 ft/s could heat to combustion risk on exit from pipe.<br>If solids present: apply Ve = C/√ρ (Eq.2.14) instead.</div></div>`;}
+  h+=`<div class="eq-blk"><div class="eq-num">ASME B31.3 — EQ. 2.19 · PRESSURE DESIGN WALL THICKNESS</div><div class="eq-main">t = Pi·Do / [2·(S·E + Pi·Y)]</div><div class="eq-vars">t = pressure design thickness (in) · Pi = internal design pressure (psig) · Do = pipe OD (in) · S = allowable stress (psi) · E = weld joint factor (1.0 seamless, 0.85 ERW) · Y = 0.4 (ferrous ≤900°F, t&lt;D/6)<br>Total t = t_pressure + corrosion/mechanical allowance · API 14E §2.6: min CA = 0.050" for carbon steel<br>If t &gt; D/6: use Lamé equation per ANSI B31.3 instead</div></div>`;
+  h+=`<div class="eq-blk"><div class="eq-num">VELOCITY FROM FLOWRATE — DERIVATION</div><div class="eq-main">v = Q_flowing / A &nbsp;|&nbsp; Q_flow = Q_std × (P_std/P) × (T/T_std) × Z</div><div class="eq-vars">A = π/4 × di² (ft²) · Q_std (gas) = Qg_MMscfd × 10⁶/86400 (scf/s) · Q_flow converts scf/s to actual ft³/s using real gas law<br>Lines are linear (v ∝ Q at fixed P,T) with slope = (14.7/P × T/520 × Z) / A<br>Lower P → gas expands more → steeper slope → higher velocity at same MMscfd → why choke outlet governs sizing</div></div>`;
+  h+=`<div class="callout amber" style="margin-top:12px;"><div class="callout-hd">API RP 14E §2.2a(1) — CHOKE OUTLET & SAND REQUIREMENTS (TOPSIDES)</div>Minimum 3 feet of straight piping downstream of choke outlets. Install sand probes and cushion flow tees where sand/solids anticipated. Consider reduced velocity below Ve when sand production expected. Periodic wall UT thickness surveys if C&gt;100 or sand present.</div>`;
+  h+=`<div class="callout cyan" style="margin-top:10px;"><div class="callout-hd">UNIT CONVERSIONS</div>psi/100ft → bar/km: ×2.2621 (=×0.06895 bar/psi × 3280.84 ft/km / 100) · ft/s → m/s: ×0.3048 · lbs/ft³ → kg/m³: ×16.0185 · bbl→ft³: ×5.6146 · Total ΔP(bar) = ΔP(psi/100ft) × L(ft)/100 × 0.06895</div>`;
+  document.getElementById('eq-content').innerHTML=h;
+}
+
+// ─── TABS ─────────────────────────────────────────────────────────────────
+function showTab(n,e){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+n).classList.add('active');
+  if(e)e.target.classList.add('active');
+  if(n==='velocity')setTimeout(()=>{if(CH.vel)CH.vel.resize();},50);
+}
+
+// ─── LISTENERS ────────────────────────────────────────────────────────────
+['P_psia','T_F','Sg','Sl','CGR','Qg','Ql_in','Pi_psig','CA','Len_ft'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',update);
+});
+['C_factor','pipe_mat','E_factor','sand'].forEach(id=>{
+  document.getElementById(id).addEventListener('change',update);
+});
+
+setFluid('twophase');
+</script>
+</body>
+</html>
